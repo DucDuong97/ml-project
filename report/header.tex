@@ -1,0 +1,132 @@
+% Use ngerman instead of british if you want to write yor report in german
+\usepackage[british]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+% math stuff
+\usepackage{amsmath}
+\usepackage{amssymb}
+% Customization of ordered and unordered lists
+\usepackage{enumitem}
+% Include nicely formatted code in your latex documents
+\usepackage{listings}
+\usepackage{color}
+% Nice looking tables
+\usepackage{booktabs}
+% Add glaring red TODO notes to your docuemnt
+\usepackage{todonotes}
+% Use biber instead of the antique bibtex
+% You might need to change some settings in your editor for that to work correctly
+% In Texstudio go to 'Options'->'Configure Texstudio...'->'Build' and set 'Default Bibliography Tool' to 'Biber'
+\usepackage[backend=biber,style=numeric-comp,sorting=none]{biblatex}
+% Extended customization of floats, like figures, tables, etc.
+\usepackage{float}
+% Better support for including figures
+\usepackage{graphicx}
+% Hyperlinking within the document and support for external links
+\usepackage{hyperref}
+% Automatically infer the type of reference
+\usepackage{cleveref}
+
+\geometry{a4paper}
+
+% Uncomment this to allow multiline equation to extend to multiple pages
+%\allowdisplaybreaks
+
+% Remove extra space between figures and captions.
+\setlength{\abovecaptionskip}{0pt}
+
+% Unicode workaround for lstlistings
+\lstset{literate=
+	{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+	{Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+	{à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+	{À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+	{ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+	{Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+	{â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+	{Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+	{œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+	{ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+	{ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+	{€}{{\euro}}1 {£}{{\pounds}}1 {«}{{\guillemotleft}}1
+	{»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1
+}
+
+% Define Synatx highlighting for Python
+\definecolor{maroon}{cmyk}{0, 0.87, 0.68, 0.32}
+\definecolor{halfgray}{gray}{0.55}
+\definecolor{ipython_frame}{RGB}{207, 207, 207}
+\definecolor{ipython_bg}{RGB}{247, 247, 247}
+\definecolor{ipython_red}{RGB}{186, 33, 33}
+\definecolor{ipython_green}{RGB}{0, 128, 0}
+\definecolor{ipython_cyan}{RGB}{64, 128, 128}
+\definecolor{ipython_purple}{RGB}{170, 34, 255}
+
+\lstdefinelanguage{iPython}{
+	morekeywords=[1]{access,and,break,class,continue,def,del,elif,else,except,exec,finally,for,from,global,if,import,in,is,lambda,not,or,pass,print,raise,return,try,while},%
+	%
+	% Built-ins
+	morekeywords=[2]{abs,all,any,basestring,bin,bool,bytearray,callable,chr,classmethod,cmp,compile,complex,delattr,dict,dir,divmod,enumerate,eval,execfile,file,filter,float,format,frozenset,getattr,globals,hasattr,hash,help,hex,id,input,int,isinstance,issubclass,iter,len,list,locals,long,map,max,memoryview,min,next,object,oct,open,ord,pow,property,range,raw_input,reduce,reload,repr,reversed,round,set,setattr,slice,sorted,staticmethod,str,sum,super,tuple,type,unichr,unicode,vars,xrange,zip,apply,buffer,coerce,intern},%
+	%
+	sensitive=true,%
+	morecomment=[l]\#,%
+	morestring=[b]',%
+	morestring=[b]",%
+	%
+	morestring=[s]{'''}{'''},% used for documentation text (mulitiline strings)
+	morestring=[s]{"""}{"""},% added by Philipp Matthias Hahn
+	%
+	morestring=[s]{r'}{'},% `raw' strings
+	morestring=[s]{r"}{"},%
+	morestring=[s]{r'''}{'''},%
+	morestring=[s]{r"""}{"""},%
+	morestring=[s]{u'}{'},% unicode strings
+	morestring=[s]{u"}{"},%
+	morestring=[s]{u'''}{'''},%
+	morestring=[s]{u"""}{"""},%
+    morestring=[s]{f'}{'},% format strings
+    morestring=[s]{f"}{"},%
+    morestring=[s]{f'''}{'''},%
+    morestring=[s]{f"""}{"""},%
+	%
+	identifierstyle=\color{black}\ttfamily,
+	commentstyle=\color{ipython_cyan}\ttfamily,
+	stringstyle=\color{ipython_red}\ttfamily,
+	keepspaces=true,
+	showspaces=false,
+	showstringspaces=false,
+	%
+	rulecolor=\color{ipython_frame},
+	frame=single,
+	frameround={t}{t}{t}{t},
+	framexleftmargin=6mm,
+	numbers=left,
+	numberstyle=\tiny\color{halfgray},
+	%
+	%
+	backgroundcolor=\color{ipython_bg},
+	extendedchars=true,
+	basicstyle={\small\ttfamily},
+    keywordstyle=[1]{\color{ipython_green}\ttfamily},
+	keywordstyle=[2]{\color{ipython_purple}\ttfamily},
+}
+
+% General math commands
+\newcommand{\argmin}{\operatornamewithlimits{arg\ min}}
+\newcommand{\argmax}{\operatornamewithlimits{arg\ max}}
+\newcommand{\img}{\operatorname{Im}}
+\newcommand{\dotcup}{\mathbin{\dot{\cup}}}
+
+% Probability commands
+\newcommand{\expect}[2][{}]{\operatornamewithlimits{\mathbb{E}}_{#1}\left[#2\right]}
+\newcommand{\prob}[2][{}]{\operatornamewithlimits{\mathbb{P}}_{#1}\left[#2\right]}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\Ind}[1]{\operatorname{\mathbb{I}}_{#1}}
+
+% Calculus commands
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+% Add this at the end of a line of an unnumbered multiline equation
+% It will produce a single equation nuber just for that line
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}

@@ -1,0 +1,87 @@
+% !TeX spellcheck = en_GB
+\documentclass[11pt]{article}
+
+% Use the header
+\input{../header}
+
+% Add bib file that contains references
+\addbibresource{references.bib}
+
+\title{Machine Learning Project\\Task 1 Report Template}
+\author{Philipp Liznerski \\ liznerski@cs.uni-kl.de\and
+	Tobias Michels\\ t\_michels15@cs.uni-kl.de\and
+    Saurabh Varshneya\\ varshneya@cs.uni-kl.de}
+\date{\today}
+\begin{document}
+	
+\maketitle
+
+\section{HOW-TO}
+This template aims at less experienced \LaTeX users and shows how to achieve some common tasks that might come up as you are writing your report. We don't require you to use the template; if you want, you can simply delete it and start your report from scratch or use your own template files.
+
+\subsection{Equations}
+We can easily typeset equations over multiple lines using the \verb|align| environment, however this will add a number to the end of every single line. The \verb|align*| environment on the other hand does not add numbers to any of the equations, but we can use the \verb|\numberthis| command at the end of a line to give only that line a number:
+\begin{align*}
+	2 + 2 &= 4\\
+	4 - 1 &= 3 \numberthis \label{eq:quickmaths}
+\end{align*}
+Now we can reference the second line as \cref{eq:quickmaths} using the \verb|\cref| command. Note that the \texttt{cleveref} package automatically determined that the type of object we wanted to reference is an equation and it therefore added the corresponding text. \Cref{eq:quickmaths} can also be referenced at the beginning of a sentence if we use the \verb|\Cref| command instead.
+
+\subsection{Ordered Lists}
+The \verb|enumitem| packages provides great flexibility in handling ordered lists, specifically \verb|enumerate| environments. Usually, items would be labelled by Arabic numbers and a period:
+\begin{enumerate}
+    \item This
+    \item is
+    \item a test.
+\end{enumerate}
+Perhaps you would like to have letters instead to replicate the task sheet and not quite as much empty space between the items? Not a problem:
+\begin{enumerate}[itemsep=0.0em, label=\alph*)]
+    \item This
+    \item is
+    \item a test.
+\end{enumerate}
+Spacing can also be adjusted globally, using the command \verb|\setlist{itemsep=<spacing>}|.
+
+\subsection{Figures \& Code}
+At some point, you might want to include plots or other graphics in your report. Usually, this is done by defining a figure that does not necessarily appear at the point in the document where it was defined; see \cref{fig:functions} for example. The python code that generated the figure is also included with the report template, please have a look at the file \verb|figures/make_figures.py|.
+
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics{figures/example_plot}
+    \end{center}
+    \caption{A figure that shows the relationship between $y$ and $x$.}
+    \label{fig:functions}
+\end{figure}
+
+But what if you want to include and reference parts of your code in the report? In that case, you can use the \verb|lstlisting| environment, which enables you to typeset code directly in \LaTeX. The header file comes with an updated definition of the python language, which supports syntax highlighting for most parts of the language. Here is a small example:
+\begin{lstlisting}[language=iPython]
+def count_ones(bits: int) -> int:
+    # count number of ones in the binary representation 
+    # of the signed integer bits   
+    c = 0
+    v = bits
+    while v != 0:
+        c += 1
+        v &= v - 1  # This clears the least significant 1 bit
+        
+    return c
+\end{lstlisting}
+
+Instead of writing the code directly in the \LaTeX file, you can also ``import'' it from the original source file with the \verb|\lstinputlisting| command. For example, \cref{lst:figsource} shows an excerpt from the source code file \verb|figures/make_figures.py| that was used to generate \cref{fig:functions}.
+
+Note how the code about counting bits was split up between two separate pages. This is expected behaviour, since the normal text mode works like a paragraph of text, which can obviously be split. If you don't want that behaviour, use the optional \verb|float| parameter that turns the listing into a floating object, similar to a figure. For example, \cref{lst:figsource} uses this parameter and is not split between two pages, but at the same time the source code does not appear in the exact position where it was included in the \LaTeX file.
+
+\lstinputlisting[float=tb, language=iPython, firstline=43, lastline=59, caption={Source code that generated \cref{fig:functions}.}, label=lst:figsource]{figures/make_figures.py}
+
+\subsection{TODO Notes}
+\todo[inline]{TODO: Remove this TODO note}
+Notes and reminders like the one above can by typeset with the \verb|\todo[inline]{<text>}| command\todo{Mention that notes can also be added next to the text area}. This is especially helpful if you are collaborating with others, since you can use this to remind everyone of work that still needs to be done.
+
+\subsection{Citing References}
+If you want to use material created by someone else in your report, it is mandatory that you cite it properly. This is even more important if you want to refer to somebody else's ideas. Luckily, \LaTeX and the internet can help you with that, making your life a lot easier in that regard. Ideally, you would only want to cite papers that were published either in a peer-reviewed journal or a conference's proceedings. For example, you might have read the OpenAI blog post about \emph{adversarial examples}\footnote{\url{https://openai.com/blog/adversarial-example-research/}} and you want to pick up some of the ideas presented there. Since the blog post lists the relevant papers, you can search for them in an engine like \emph{Google Scholar} that lets you export citations as \emph{BibTeX} entries. After pasting the entry in your references file, you can cite them in your text by simply using the \verb|\autocite| command: \autocite{papernot2017practical}.
+
+Of course, finding a peer-reviewed paper for the ideas in a blog post might not always be possible. In such a case, you can also cite the blog post directly using an \verb|@online| entry in the bib file \autocite{goodfellow2017attacking}. 
+
+% Print references
+\printbibliography
+\end{document}
