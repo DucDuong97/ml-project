@@ -6,7 +6,7 @@ This document contains a few pointers on how to set up your system, so that you 
 ### Python
 A working python installation of version 3.9 is required to solve the tasks, since you will be writing a lot of python code. We recommend setting up a virtual environment with a separate interpreter for this project to avoid cluttering your system's python installation. The following guide will show how to do this using [Anaconda](https://www.anaconda.com/) on a Linux-based system.
 
-1. Visit the [Miniconda](https://docs.conda.io/en/latest/miniconda.html) website and download the correct version for your oerating system. Follow the instructions to install miniconda on your system.
+1. Visit the [Miniconda](https://docs.conda.io/en/latest/miniconda.html) website and download the correct version for your operating system. Follow the instructions to install miniconda on your system.
 2. Create a new environment for the ML Project and preinstall Python 3.9 in that environment:
    ```shell
    $ conda create --name ML_Project python=3.9
