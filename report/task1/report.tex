@@ -17,7 +17,7 @@
 \maketitle
 
 \section{HOW-TO}
-This template aims at less experienced \LaTeX users and shows how to achieve some common tasks that might come up as you are writing your report. We don't require you to use the template; if you want, you can simply delete it and start your report from scratch or use your own template files.
+The source code in LaTex for this template is located in the file named ``report.tex'' in the project repository. This template aims at less experienced \LaTeX users and shows how to achieve some common tasks that might come up as you are writing your report. We don't require you to use the template; if you want, you can simply delete it and start your report from scratch or use your own template files.
 
 \subsection{Equations}
 We can easily typeset equations over multiple lines using the \verb|align| environment, however this will add a number to the end of every single line. The \verb|align*| environment on the other hand does not add numbers to any of the equations, but we can use the \verb|\numberthis| command at the end of a line to give only that line a number:
@@ -81,6 +81,11 @@ Notes and reminders like the one above can by typeset with the \verb|\todo[inlin
 If you want to use material created by someone else in your report, it is mandatory that you cite it properly. This is even more important if you want to refer to somebody else's ideas. Luckily, \LaTeX and the internet can help you with that, making your life a lot easier in that regard. Ideally, you would only want to cite papers that were published either in a peer-reviewed journal or a conference's proceedings. For example, you might have read the OpenAI blog post about \emph{adversarial examples}\footnote{\url{https://openai.com/blog/adversarial-example-research/}} and you want to pick up some of the ideas presented there. Since the blog post lists the relevant papers, you can search for them in an engine like \emph{Google Scholar} that lets you export citations as \emph{BibTeX} entries. After pasting the entry in your references file, you can cite them in your text by simply using the \verb|\autocite| command: \autocite{papernot2017practical}.
 
 Of course, finding a peer-reviewed paper for the ideas in a blog post might not always be possible. In such a case, you can also cite the blog post directly using an \verb|@online| entry in the bib file \autocite{goodfellow2017attacking}. 
+
+
+\subsection{Tables}
+The following webpage is an excellent resource to learn to make well-formatted tables in LaTeX using the \emph{booktabs} package \url{https://jdhao.github.io/2019/08/27/latex_table_with_booktabs/}.
+
 
 % Print references
 \printbibliography
