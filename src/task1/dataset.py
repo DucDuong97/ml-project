@@ -126,20 +126,20 @@ class StrangeSymbols(torch.utils.data.Dataset):
 def get_strange_symbols_train_loader(batch_size, root=DEFAULT_ROOT, transform=None):
     trainset = StrangeSymbols(root=root, train=True, transform=transform)
     return torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                            shuffle=True, num_workers=2)
+                                            shuffle=True, num_workers=0)
 
 def get_strange_symbols_train_data(root=DEFAULT_ROOT, transform=None):
     trainset = StrangeSymbols(root=root, train=True, transform=transform)
     batch_size = len(trainset)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                            shuffle=True, num_workers=2)
+                                            shuffle=True, num_workers=0)
     return next(iter(trainloader))
 
 def get_strange_symbols_test_data(root=DEFAULT_ROOT, transform=None):
     testset = StrangeSymbols(root=root, train=False, transform=transform)
     batch_size = len(testset)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                            shuffle=False, num_workers=2)
+                                            shuffle=False, num_workers=0)
     return next(iter(testloader))
 
 
