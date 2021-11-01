@@ -13,6 +13,22 @@ def euclidean_distance(a, b):
         dist += (a[i] - b[i]) ** 2
     return math.sqrt(dist)
 
+def manhattan_distance(a, b):
+    dist = 0.0
+    a = a.flatten()
+    b = b.flatten()
+    for i in range(len(a)):
+        dist += abs(a[i] - b[i])
+    return dist
+
+def _minkows_distance(a, b, root):
+    dist = 0.0
+    a = a.flatten()
+    b = b.flatten()
+    for i in range(len(a)):
+        dist += abs(a[i] - b[i]) ** root
+    return dist ** (1/root)
+
 
 def find_neighbors(test, X, k):
     """
