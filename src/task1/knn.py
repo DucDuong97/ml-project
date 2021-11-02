@@ -99,12 +99,7 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     raise NotImplementedError('TODO')
 
 
-def main(args):
-    # Set up data
-    train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
-    train_x = train_x.numpy()
-    train_y = np.array(train_y)
-
+def print_samples(train_x, train_y):
     unique_y = np.unique(train_y)
     label_y = unique_y[2]
 
@@ -122,10 +117,19 @@ def main(args):
         ax.imshow(np.squeeze(img))
     plt.show()
 
-    # n = find_neighbors(train_x[0], train_x, 4)
+def main(args):
+    # Set up data
+    train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
+    train_x = train_x.numpy()
+    train_y = np.array(train_y)
+    print(train_x)
+    print(np.size(train_y))
+
+    n = find_neighbors(train_x[0], train_x, 4)
     # TODO: Load and evaluate the classifier for different k
 
     # TODO: Plot results
+    print_samples(train_x, train_y)
 
 
 if __name__ == '__main__':
