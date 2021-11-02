@@ -63,15 +63,11 @@ class KNN:
         self.dist_function = dist_function
 
     def fit(self, X, y):
-        """
-        Train the k-NN classifier.
-
-        :param X: Training inputs. Array of shape (n, ...)
-        :param y: Training labels. Array of shape (n,)
-        """
-        raise NotImplementedError('TODO')
+        self.train_x = X
+        self.train_y = y
 
     def predict(self, X):
+        # TODO: b
         """
         Predict labels for new, unseen data.
 
@@ -81,10 +77,10 @@ class KNN:
         raise NotImplementedError('TODO')
 
 
-def accuracy(f, X, Y):
+def accuracy(clf, X, Y):
     sum = 0
     for x, y in zip(X, Y):
-        if (f(x) == y):
+        if (clf(x) == y):
             sum += 1
     D = np.size(Y)
     return sum / D
@@ -127,14 +123,31 @@ def main(args):
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
     train_x = train_x.numpy()
     train_y = np.array(train_y)
-    print(train_x)
-    print(np.size(train_y))
 
-    n = find_neighbors(train_x[0], train_x, 4)
-    # TODO: Load and evaluate the classifier for different k
+    test_x, test_y = get_strange_symbols_test_data(root=args.test_data)
+    test_x = test_x.numpy()
+    test_y = np.array(test_y)
 
-    # TODO: Plot results
+    # Load and evaluate the classifier for different k
+    knn_set = []
+    for i in range(1,11):
+        knn = KNN(k=i)
+        knn.fit(train_x, train_y)
+        knn_set.append(knn)
+
+    # Plot results
+    # TODO: a
     print_samples(train_x, train_y)
+    # TODO: c
+    k = [1,2,3,4,5,6,7,8,9,10]
+    acc = []
+    for i in range(1,11):
+        acc.append(cross_validation(knn_set[i], test_x,test_y))
+    plt.plot(k, acc)
+    plt.xlabel('k')
+    plt.ylabel('accuracy')
+    plt.title('Accuracy for different k in KNN')
+    plt.show()
 
 
 if __name__ == '__main__':
