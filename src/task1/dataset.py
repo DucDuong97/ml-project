@@ -26,6 +26,9 @@ class StrangeSymbols(torch.utils.data.Dataset):
         'https://seafile.rlp.net/f/b4e03d983fea4e5790b0/?dl=1',
     ]
 
+
+    
+
     def __init__(self, 
                  root: str=DEFAULT_ROOT, 
                  train: bool = True,
@@ -35,9 +38,13 @@ class StrangeSymbols(torch.utils.data.Dataset):
         self.transform = transform
         self.download()
 
+        def _norm(x):
+            x = x/255
+            return x
+
         if self.transform == None:
             self.transform = transforms.Compose([
-                Lambda(lambda out: out/255),
+                Lambda(_norm),
                 transforms.Normalize((0.5, ), (0.5, ))
                 ])
 
@@ -83,6 +90,7 @@ class StrangeSymbols(torch.utils.data.Dataset):
         else:
             return len(self.test_data)
 
+
     def _check_exists(self):
         return os.path.exists(os.path.join(self.root, 'training_data.pt')) and \
             os.path.exists(os.path.join(self.root, 'test_data.pt')) and \
@@ -120,6 +128,8 @@ class StrangeSymbols(torch.utils.data.Dataset):
         fmt_str += '    Split: {}\n'.format(tmp)
         fmt_str += '    Root Location: {}\n'.format(self.root)
         return fmt_str
+
+        
 
 
 
