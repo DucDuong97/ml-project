@@ -21,7 +21,7 @@ def manhattan_distance(a, b):
         dist += abs(a[i] - b[i])
     return dist
 
-def _minkows_distance(a, b, root):
+def minkows_distance(a, b, root):
     dist = 0.0
     a = a.flatten()
     b = b.flatten()
@@ -79,8 +79,9 @@ class KNN:
 
 def accuracy(clf, X, Y):
     sum = 0
-    for x, y in zip(X, Y):
-        if (clf(x) == y):
+    pred_Y = clf.predict(X)
+    for pred_y, y in zip(pred_Y, Y):
+        if (pred_y == y):
             sum += 1
     D = np.size(Y)
     return sum / D
@@ -124,31 +125,46 @@ def main(args):
     train_x = train_x.numpy()
     train_y = np.array(train_y)
 
-    test_x, test_y = get_strange_symbols_test_data(root=args.test_data)
-    test_x = test_x.numpy()
-    test_y = np.array(test_y)
+    # test_x, test_y = get_strange_symbols_test_data(root=args.test_data)
+    # test_x = test_x.numpy()
+    # test_y = np.array(test_y)
 
     # Load and evaluate the classifier for different k
     knn_set = []
     for i in range(1,11):
         knn = KNN(k=i)
-        knn.fit(train_x, train_y)
         knn_set.append(knn)
 
     # Plot results
     # TODO: a
     print_samples(train_x, train_y)
+
     # TODO: c
     k = [1,2,3,4,5,6,7,8,9,10]
     acc = []
     for i in range(1,11):
-        acc.append(cross_validation(knn_set[i], test_x,test_y))
+        acc.append(cross_validation(knn_set[i], train_x, train_y))
     plt.plot(k, acc)
     plt.xlabel('k')
     plt.ylabel('accuracy')
     plt.title('Accuracy for different k in KNN')
     plt.show()
 
+    # TODO: d
+    best_k = 5 # replace when knowing the best k
+    knn_euclid = KNN(best_k, euclidean_distance)
+    knn_manhat = KNN(best_k, manhattan_distance)
+    knn_minkow = KNN(best_k, minkows_distance)
+
+    dist = [knn_euclid,knn_manhat,knn_minkow]
+    acc = [cross_validation(knn_euclid, train_x, train_y),
+            cross_validation(knn_manhat, train_x, train_y),
+            cross_validation(knn_minkow, train_x, train_y)]
+    plt.plot(dist, acc)
+    plt.xlabel('Distance Function')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Distance Function in KNN')
+    plt.show()
 
 if __name__ == '__main__':
     import argparse
