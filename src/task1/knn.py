@@ -13,6 +13,7 @@ def euclidean_distance(a, b):
         dist += (a[i] - b[i]) ** 2
     return math.sqrt(dist)
 
+
 def manhattan_distance(a, b):
     dist = 0.0
     a = a.flatten()
@@ -21,13 +22,14 @@ def manhattan_distance(a, b):
         dist += abs(a[i] - b[i])
     return dist
 
+
 def _minkows_distance(a, b, root):
     dist = 0.0
     a = a.flatten()
     b = b.flatten()
     for i in range(len(a)):
         dist += abs(a[i] - b[i]) ** root
-    return dist ** (1/root)
+    return dist ** (1 / root)
 
 
 def find_neighbors(test, X, k):
@@ -40,7 +42,6 @@ def find_neighbors(test, X, k):
     :return: List of k nearest neighbors (may contain the test point itself)
     """
     dists = []
-    # X = np.array(X).tolist()
     for i in X:
         dists.append((i, euclidean_distance(test, i)))
     dists.sort(key=lambda tup: tup[1])
@@ -49,12 +50,6 @@ def find_neighbors(test, X, k):
         neighbors.append((dists[i][0], dists[i][1]))
         print("Nearest neighbor with the distance ", dists[i][1])
     return neighbors
-
-
-def label(neighbors, Y):
-    print(np.size(Y))
-    for i in neighbors:
-        print(Y[np.where(neighbors == i)])
 
 
 class KNN:
@@ -102,8 +97,11 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
 def main(args):
     # Set up data
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
+    print(type(train_y))
     train_x = train_x.numpy()
     train_y = np.array(train_y)
+    print(np.shape(train_x))
+    print(np.shape(train_y))
 
     unique_y = np.unique(train_y)
     label_y = unique_y[2]
@@ -122,7 +120,8 @@ def main(args):
         ax.imshow(np.squeeze(img))
     plt.show()
 
-    # n = find_neighbors(train_x[0], train_x, 4)
+    n = find_neighbors(train_x[0], train_x, 4)
+    print(n)
     # TODO: Load and evaluate the classifier for different k
 
     # TODO: Plot results
