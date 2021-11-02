@@ -26,9 +26,6 @@ class StrangeSymbols(torch.utils.data.Dataset):
         'https://seafile.rlp.net/f/b4e03d983fea4e5790b0/?dl=1',
     ]
 
-
-    
-
     def __init__(self, 
                  root: str=DEFAULT_ROOT, 
                  train: bool = True,
