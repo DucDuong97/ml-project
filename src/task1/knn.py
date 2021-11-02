@@ -81,8 +81,13 @@ class KNN:
         raise NotImplementedError('TODO')
 
 
-def accuracy(predicted, actual):
-    return np.mean(predicted == actual)
+def accuracy(f, X, Y):
+    sum = 0
+    for x, y in zip(X, Y):
+        if (f(x) == y):
+            sum += 1
+    D = np.size(Y)
+    return sum / D
 
 
 def cross_validation(clf, X, Y, m=5, metric=accuracy):
