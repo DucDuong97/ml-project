@@ -5,8 +5,8 @@ import errno
 import tarfile
 from typing import Any, Callable, Dict, IO, List, Optional, Tuple, Union
 import warnings
+import numpy as np
 
-from torchvision.transforms.transforms import Lambda
 
 
 # Change this to the path where you want to download the dataset to
@@ -18,7 +18,6 @@ DEFAULT_ROOT = './data/symbols'
 #   For a better understanding of data preprocessing though, we recommend reading it.     #
 #                                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 
 
 class StrangeSymbols(torch.utils.data.Dataset):
@@ -35,13 +34,9 @@ class StrangeSymbols(torch.utils.data.Dataset):
         self.transform = transform
         self.download()
 
-        def _norm(x):
-            x = x/255
-            return x
-
         if self.transform == None:
             self.transform = transforms.Compose([
-                Lambda(_norm),
+                transforms.Lambda(self._norm),
                 transforms.Normalize((0.5, ), (0.5, ))
                 ])
 
@@ -50,15 +45,6 @@ class StrangeSymbols(torch.utils.data.Dataset):
             self.train_labels = torch.load(os.path.join(self.root, 'training_labels.pt'))
         else:
             self.test_data = torch.load(os.path.join(self.root, 'test_data.pt'))
-            try:
-                self.test_labels = torch.load(os.path.join(self.root, 'test_labels.pt'))
-            except FileNotFoundError as e:
-                print(f'No test labels found at {e.filename}!')
-
-                class Dummy:
-                    def __getitem__(self, item):
-                        return torch.tensor(float('nan'))
-                self.test_labels = Dummy()
 
     def __getitem__(self, index: int):
         """
@@ -71,22 +57,20 @@ class StrangeSymbols(torch.utils.data.Dataset):
         if self.train:
             img, target = self.train_data[index], self.train_labels[index]
         else:
-            img, target = self.test_data[index], self.test_labels[index]
+            img = self.test_data[index]
         
         img = img.unsqueeze(0)
         img = img.to(torch.float64)
 
         if self.transform is not None:
             img = self.transform(img)
-
-        return img, target
+        return (img, target) if self.train else (img, float("NaN"))
 
     def __len__(self):
         if self.train:
             return len(self.train_data)
         else:
             return len(self.test_data)
-
 
     def _check_exists(self):
         return os.path.exists(os.path.join(self.root, 'training_data.pt')) and \
@@ -95,10 +79,8 @@ class StrangeSymbols(torch.utils.data.Dataset):
 
     def download(self):
         from six.moves import urllib
-
         if self._check_exists():
             return
-
         # download files
         try:
             os.makedirs(self.root)
@@ -126,8 +108,10 @@ class StrangeSymbols(torch.utils.data.Dataset):
         fmt_str += '    Root Location: {}\n'.format(self.root)
         return fmt_str
 
-        
-
+    @staticmethod
+    def _norm(x):
+        x = x/255
+        return x
 
 
 def get_strange_symbols_train_loader(batch_size, root=DEFAULT_ROOT, transform=None):
@@ -150,16 +134,17 @@ def get_strange_symbols_test_data(root=DEFAULT_ROOT, transform=None):
     return next(iter(testloader))
 
 
-
 # if __name__ == '__main__':
 #     train_loader = get_strange_symbols_train_loader(batch_size=32)
 #     X,y = next(iter(train_loader))
 #     print(f'The tensor containing a batch of data points is of shape {X.shape}, and of labels is of shape {y.shape}')
 
 #     train_data, train_labels = get_strange_symbols_train_data()
-#     print(train_data.shape)
+#     print(train_data.shape, train_labels.shape)
 
 #     test_data, test_labels = get_strange_symbols_test_data()
-#     print(test_data.shape)
+#     print(test_data.shape, test_labels.shape)
+
+#     print(test_labels)
 
     
