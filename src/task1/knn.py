@@ -25,13 +25,13 @@ def manhattan_distance(a, b):
     return dist
 
 
-def minkows_distance(a, b, root):
+def minkows_distance(a, b):
     dist = 0.0
     a = a.flatten()
     b = b.flatten()
     for i in range(len(a)):
-        dist += abs(a[i] - b[i]) ** root
-    return dist ** (1 / root)
+        dist += abs(a[i] - b[i]) ** 3
+    return dist ** (1 / 3)
 
 
 def knn(test, X, k, Y, dist_func):
@@ -186,11 +186,8 @@ def convolution(x, filter):
 def main(args):
     # Set up data
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
-    train_x = train_x.numpy()
-    train_y = np.array(train_y)
-
-    # For testing: knn_predict
-    # knn_predict(train_x[0], train_x, 4, train_y)
+    train_x = train_x.numpy()[0:20]
+    train_y = np.array(train_y)[0:20]
 
     # test_x, test_y = get_strange_symbols_test_data(root=args.test_data)
     # test_x = test_x.numpy()
@@ -204,59 +201,59 @@ def main(args):
 
     # Plot results
     # TODO: a
-    print_samples(train_x, train_y)
+    # print_samples(train_x, train_y)
 
     # TODO: c
-    k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    acc = []
-    for i in range(1, 11):
-        acc.append(cross_validation(knn_set[i], train_x, train_y))
-    plt.plot(k, acc)
-    plt.xlabel('k')
-    plt.ylabel('accuracy')
-    plt.title('Accuracy for different k in KNN')
-    plt.show()
+    # k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # acc = []
+    # for i in range(0, 10):
+    #     acc.append(cross_validation(knn_set[i], train_x, train_y))
+    # plt.plot(k, acc)
+    # plt.xlabel('k')
+    # plt.ylabel('accuracy')
+    # plt.title('Accuracy for different k in KNN')
+    # plt.show()
 
     # TODO: e
-    best_k = 5 # replace when knowing the best k
-    knn_euclid = KNN(best_k, euclidean_distance)
-    knn_manhat = KNN(best_k, manhattan_distance)
-    knn_minkow = KNN(best_k, minkows_distance)
+    # best_k = 5 # replace when knowing the best k
+    # knn_euclid = KNN(best_k, euclidean_distance)
+    # knn_manhat = KNN(best_k, manhattan_distance)
+    # knn_minkow = KNN(best_k, minkows_distance)
 
-    dist = ['knn_euclid','knn_manhat','knn_minkow']
-    acc = [cross_validation(knn_euclid, train_x, train_y),
-           cross_validation(knn_manhat, train_x, train_y),
-           cross_validation(knn_minkow, train_x, train_y)]
-    plt.plot(dist, acc)
-    plt.xlabel('Distance Function')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy for different Distance Function in KNN')
-    plt.show()
+    # dist = ['knn_euclid','knn_manhat','knn_minkow']
+    # acc = [cross_validation(knn_euclid, train_x, train_y),
+    #        cross_validation(knn_manhat, train_x, train_y),
+    #        cross_validation(knn_minkow, train_x, train_y)]
+    # plt.plot(dist, acc)
+    # plt.xlabel('Distance Function')
+    # plt.ylabel('Accuracy')
+    # plt.title('Accuracy for different Distance Function in KNN')
+    # plt.show()
 
     #TODO: g
-    blur_filter = []
-    edge_filter = []
-    blur_X = map(lambda x: convolution(x, blur_filter),train_x)
-    edge_X = map(lambda x: convolution(x, edge_filter),train_x)
-    filter = ['no filter','blur','detect edge']
-    acc = [cross_validation(knn_euclid, train_x, train_y),
-            cross_validation(knn_euclid, blur_X, train_y),
-            cross_validation(knn_euclid, edge_X, train_y)]
-    plt.plot(filter, acc)
-    plt.xlabel('Filter')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy for different Filters in KNN')
-    plt.show()
+    # blur_filter = []
+    # edge_filter = []
+    # blur_X = map(lambda x: convolution(x, blur_filter),train_x)
+    # edge_X = map(lambda x: convolution(x, edge_filter),train_x)
+    # filter = ['no filter','blur','detect edge']
+    # acc = [cross_validation(knn_euclid, train_x, train_y),
+    #         cross_validation(knn_euclid, blur_X, train_y),
+    #         cross_validation(knn_euclid, edge_X, train_y)]
+    # plt.plot(filter, acc)
+    # plt.xlabel('Filter')
+    # plt.ylabel('Accuracy')
+    # plt.title('Accuracy for different Filters in KNN')
+    # plt.show()
 
     # TODO: h
-    knn_algo = ['normal KNN','weight KNN']
-    acc = [cross_validation(knn_euclid, train_x, train_y),
-            cross_validation(Weight_KNN(), train_x, train_y)]
-    plt.plot(knn_algo, acc)
-    plt.xlabel('Filter')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy for different Algorithsm in KNN')
-    plt.show()
+    # knn_algo = ['normal KNN','weight KNN']
+    # acc = [cross_validation(knn_euclid, train_x, train_y),
+    #         cross_validation(Weight_KNN(), train_x, train_y)]
+    # plt.plot(knn_algo, acc)
+    # plt.xlabel('Filter')
+    # plt.ylabel('Accuracy')
+    # plt.title('Accuracy for different Algorithsm in KNN')
+    # plt.show()
 
     # TODO: i
 
