@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -32,7 +34,7 @@ def minkows_distance(a, b, root):
     return dist ** (1 / root)
 
 
-def knn_predict(test, X, k, Y):
+def knn(test, X, k, Y, dist_func):
     """
     Find k nearest neighbors of point test
 
@@ -43,7 +45,7 @@ def knn_predict(test, X, k, Y):
     """
     dists = []
     for i in range(np.shape(X)[0]):
-        dists.append((X[i], euclidean_distance(test, X[i]), Y[i]))
+        dists.append((X[i], dist_func(test, X[i]), Y[i]))
     dists.sort(key=lambda tup: tup[1])
     neighbors = []
     for i in range(k):
@@ -65,7 +67,7 @@ def knn_predict(test, X, k, Y):
         if labels[k] > max_label_amount:
             max_label = k
             max_label_amount = labels[k]
-    # print(max_label)
+    print("The label prediction is ", max_label)
     return max_label
 
 
@@ -79,14 +81,16 @@ class KNN:
         self.train_y = y
 
     def predict(self, X):
-        # TODO: b
         """
         Predict labels for new, unseen data.
 
         :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
         :return: Labels for all points in X. Array of shape (n',)
         """
-        raise NotImplementedError('TODO')
+        res = []
+        for x in X:
+            res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
+        return res
 
 
 def accuracy(clf, X, Y):
@@ -110,7 +114,30 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     :param metric: Metric that should be evaluated on the test fold.
     :return: The average metric over all m folds.
     """
-    raise NotImplementedError('TODO')
+
+    split_res_X = np.split(X, m)
+    split_res_Y = np.split(Y, m)
+    accuracies = []
+    for i in range(len(split_res_X)):
+        # retrieving the test data for each iteration
+        image_test_set = split_res_X[i]
+        label_test_set = split_res_Y[i]
+
+        # construct a training_set
+        split_res_X_copy = split_res_X.copy()
+        split_res_Y_copy = split_res_Y.copy()
+        del split_res_X_copy[i]
+        del split_res_Y_copy[i]
+        image_train_set = np.vstack(split_res_X_copy)
+        split_res_Y_copy = np.array(split_res_Y_copy)
+        label_train_set = split_res_Y_copy.flatten()
+
+        # using the training data and evaluate using given metric
+        clf.fit(image_train_set, label_train_set)
+        accuracies.append(metric(clf, image_test_set, label_test_set))
+
+    # calculating average accuracy
+    return sum(accuracies) / len(accuracies)
 
 
 def print_samples(train_x, train_y):
@@ -156,9 +183,9 @@ def main(args):
     print_samples(train_x, train_y)
 
     # TODO: c
-    k = [1,2,3,4,5,6,7,8,9,10]
+    k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     acc = []
-    for i in range(1,11):
+    for i in range(1, 11):
         acc.append(cross_validation(knn_set[i], train_x, train_y))
     plt.plot(k, acc)
     plt.xlabel('k')
@@ -167,15 +194,15 @@ def main(args):
     plt.show()
 
     # TODO: d
-    best_k = 5 # replace when knowing the best k
+    best_k = 5  # replace when knowing the best k
     knn_euclid = KNN(best_k, euclidean_distance)
     knn_manhat = KNN(best_k, manhattan_distance)
     knn_minkow = KNN(best_k, minkows_distance)
 
-    dist = [knn_euclid,knn_manhat,knn_minkow]
+    dist = [knn_euclid, knn_manhat, knn_minkow]
     acc = [cross_validation(knn_euclid, train_x, train_y),
-            cross_validation(knn_manhat, train_x, train_y),
-            cross_validation(knn_minkow, train_x, train_y)]
+           cross_validation(knn_manhat, train_x, train_y),
+           cross_validation(knn_minkow, train_x, train_y)]
     plt.plot(dist, acc)
     plt.xlabel('Distance Function')
     plt.ylabel('Accuracy')
