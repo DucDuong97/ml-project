@@ -23,7 +23,7 @@ def manhattan_distance(a, b):
     return dist
 
 
-def _minkows_distance(a, b, root):
+def minkows_distance(a, b, root):
     dist = 0.0
     a = a.flatten()
     b = b.flatten()
@@ -32,7 +32,7 @@ def _minkows_distance(a, b, root):
     return dist ** (1 / root)
 
 
-def find_neighbors(test, X, k):
+def knn_predict(test, X, k, Y):
     """
     Find k nearest neighbors of point test
 
@@ -42,14 +42,31 @@ def find_neighbors(test, X, k):
     :return: List of k nearest neighbors (may contain the test point itself)
     """
     dists = []
-    for i in X:
-        dists.append((i, euclidean_distance(test, i)))
+    for i in range(np.shape(X)[0]):
+        dists.append((X[i], euclidean_distance(test, X[i]), Y[i]))
     dists.sort(key=lambda tup: tup[1])
     neighbors = []
     for i in range(k):
-        neighbors.append((dists[i][0], dists[i][1]))
-        print("Nearest neighbor with the distance ", dists[i][1])
-    return neighbors
+        neighbors.append((dists[i][0], dists[i][1], dists[i][2]))
+        print("Nearest neighbor with the distance ", dists[i][1], " with the label of ", dists[i][2])
+
+    labels = {}
+    for i in neighbors:
+        if i[2] in labels:
+            labels[i[2]] += 1
+            # print("Label ", i[2], " is in dict. Increase count")
+        else:
+            # print("Label ", i[2], " is currently not in dict. Adding")
+            labels[i[2]] = 1
+
+    max_label = None
+    max_label_amount = 0
+    for k in labels:
+        if labels[k] > max_label_amount:
+            max_label = k
+            max_label_amount = labels[k]
+    # print(max_label)
+    return max_label
 
 
 class KNN:
@@ -74,8 +91,9 @@ class KNN:
 
 def accuracy(clf, X, Y):
     sum = 0
-    for x, y in zip(X, Y):
-        if (clf(x) == y):
+    pred_Y = clf.predict(X)
+    for pred_y, y in zip(pred_Y, Y):
+        if (pred_y == y):
             sum += 1
     D = np.size(Y)
     return sum / D
@@ -95,9 +113,7 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     raise NotImplementedError('TODO')
 
 
-
 def print_samples(train_x, train_y):
-
     unique_y = np.unique(train_y)
     label_y = unique_y[2]
 
@@ -122,29 +138,48 @@ def main(args):
     train_x = train_x.numpy()
     train_y = np.array(train_y)
 
-    test_x, test_y = get_strange_symbols_test_data()
-    test_x = test_x.numpy()
-    test_y = np.array(test_y)
+    # For testing: knn_predict
+    # knn_predict(train_x[0], train_x, 4, train_y)
+
+    # test_x, test_y = get_strange_symbols_test_data(root=args.test_data)
+    # test_x = test_x.numpy()
+    # test_y = np.array(test_y)
 
     # Load and evaluate the classifier for different k
     knn_set = []
-    for i in range(1,11):
+    for i in range(1, 11):
         knn = KNN(k=i)
-        knn.fit(train_x, train_y)
         knn_set.append(knn)
 
     # Plot results
     # TODO: a
     print_samples(train_x, train_y)
+
     # TODO: c
     k = [1,2,3,4,5,6,7,8,9,10]
     acc = []
     for i in range(1,11):
-        acc.append(cross_validation(knn_set[i], test_x,test_y))
+        acc.append(cross_validation(knn_set[i], train_x, train_y))
     plt.plot(k, acc)
     plt.xlabel('k')
     plt.ylabel('accuracy')
     plt.title('Accuracy for different k in KNN')
+    plt.show()
+
+    # TODO: d
+    best_k = 5 # replace when knowing the best k
+    knn_euclid = KNN(best_k, euclidean_distance)
+    knn_manhat = KNN(best_k, manhattan_distance)
+    knn_minkow = KNN(best_k, minkows_distance)
+
+    dist = [knn_euclid,knn_manhat,knn_minkow]
+    acc = [cross_validation(knn_euclid, train_x, train_y),
+            cross_validation(knn_manhat, train_x, train_y),
+            cross_validation(knn_minkow, train_x, train_y)]
+    plt.plot(dist, acc)
+    plt.xlabel('Distance Function')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Distance Function in KNN')
     plt.show()
 
 
