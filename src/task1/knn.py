@@ -76,6 +76,25 @@ class KNN:
         """
         raise NotImplementedError('TODO')
 
+class Weight_KNN:
+    def __init__(self, k=5, dist_function=euclidean_distance):
+        self.k = k
+        self.dist_function = dist_function
+
+    def fit(self, X, y):
+        self.train_x = X
+        self.train_y = y
+
+    def predict(self, X):
+        # TODO: b
+        """
+        Predict labels for new, unseen data.
+
+        :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
+        :return: Labels for all points in X. Array of shape (n',)
+        """
+        raise NotImplementedError('TODO')
+
 
 def accuracy(clf, X, Y):
     sum = 0
@@ -188,6 +207,14 @@ def main(args):
     plt.show()
 
     # TODO: h
+    knn_algo = ['normal KNN','weight KNN']
+    acc = [cross_validation(knn_euclid, train_x, train_y),
+            cross_validation(Weight_KNN(), train_x, train_y)]
+    plt.plot(knn_algo, acc)
+    plt.xlabel('Filter')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Algorithsm in KNN')
+    plt.show()
 
     # TODO: i
 
