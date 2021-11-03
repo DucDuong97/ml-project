@@ -119,6 +119,12 @@ def print_samples(train_x, train_y):
         ax.imshow(np.squeeze(img))
     plt.show()
 
+
+def convolution(x, filter):
+    squeeze_x = np.squeeze(x)
+    # TODO
+
+
 def main(args):
     # Set up data
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
@@ -150,13 +156,13 @@ def main(args):
     plt.title('Accuracy for different k in KNN')
     plt.show()
 
-    # TODO: d
+    # TODO: e
     best_k = 5 # replace when knowing the best k
     knn_euclid = KNN(best_k, euclidean_distance)
     knn_manhat = KNN(best_k, manhattan_distance)
     knn_minkow = KNN(best_k, minkows_distance)
 
-    dist = [knn_euclid,knn_manhat,knn_minkow]
+    dist = ['knn_euclid','knn_manhat','knn_minkow']
     acc = [cross_validation(knn_euclid, train_x, train_y),
             cross_validation(knn_manhat, train_x, train_y),
             cross_validation(knn_minkow, train_x, train_y)]
@@ -165,6 +171,25 @@ def main(args):
     plt.ylabel('Accuracy')
     plt.title('Accuracy for different Distance Function in KNN')
     plt.show()
+
+    #TODO: g
+    blur_filter = []
+    edge_filter = []
+    blur_X = map(lambda x: convolution(x, blur_filter),train_x)
+    edge_X = map(lambda x: convolution(x, edge_filter),train_x)
+    filter = ['no filter','blur','detect edge']
+    acc = [cross_validation(knn_euclid, train_x, train_y),
+            cross_validation(knn_euclid, blur_X, train_y),
+            cross_validation(knn_euclid, edge_X, train_y)]
+    plt.plot(filter, acc)
+    plt.xlabel('Filter')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Filters in KNN')
+    plt.show()
+
+    # TODO: h
+
+    # TODO: i
 
 if __name__ == '__main__':
     import argparse
