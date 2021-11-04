@@ -133,23 +133,21 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     :param metric: Metric that should be evaluated on the test fold.
     :return: The average metric over all m folds.
     """
+    data_size = np.size(Y)
+    fold_size = (int) (data_size / m)
 
-    split_res_X = np.split(X, m)
-    split_res_Y = np.split(Y, m)
+
     accuracies = []
-    for i in range(len(split_res_X)):
+    for i in range(m):
+        include_idx = np.arange(i*fold_size,fold_size + i*fold_size)
+        mask = np.array([(i in include_idx) for i in range(data_size)])     ###
         # retrieving the test data for each iteration
-        image_test_set = split_res_X[i]
-        label_test_set = split_res_Y[i]
+        image_test_set = X[mask]
+        label_test_set = Y[mask]
 
         # construct a training_set
-        split_res_X_copy = split_res_X.copy()
-        split_res_Y_copy = split_res_Y.copy()
-        del split_res_X_copy[i]
-        del split_res_Y_copy[i]
-        image_train_set = np.vstack(split_res_X_copy)
-        split_res_Y_copy = np.array(split_res_Y_copy)
-        label_train_set = split_res_Y_copy.flatten()
+        image_train_set = X[~mask]
+        label_train_set = Y[~mask]
 
         # using the training data and evaluate using given metric
         clf.fit(image_train_set, label_train_set)
