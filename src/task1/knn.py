@@ -10,12 +10,7 @@ from dataset import *
 
 
 def euclidean_distance(a, b):
-    dist = 0.0
-    a = a.flatten()
-    b = b.flatten()
-    for i in range(len(a)):
-        dist += (a[i] - b[i]) ** 2
-    return math.sqrt(dist)
+    return np.linalg.norm(a-b)
 
 
 def manhattan_distance(a, b):
