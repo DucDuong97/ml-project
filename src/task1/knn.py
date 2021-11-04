@@ -3,6 +3,8 @@ import random
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import time
+import heapq
 
 from dataset import *
 
@@ -33,6 +35,21 @@ def minkows_distance(a, b):
         dist += abs(a[i] - b[i]) ** 3
     return dist ** (1 / 3)
 
+cpr_count = 0
+
+class Node(object):
+    def __init__(self, dist: float, label: int):
+        self.dist = dist
+        self.label = label
+
+    def __repr__(self):
+        return f'Node value: {self.dist}, Label: {self.label}'
+
+    def __lt__(self, other):
+        global cpr_count
+        cpr_count += 1
+        return self.dist > other.dist
+
 
 def knn(test, X, k, Y, dist_func):
     """
@@ -44,23 +61,30 @@ def knn(test, X, k, Y, dist_func):
     :return: List of k nearest neighbors (may contain the test point itself)
     """
     dists = []
-    for i in range(np.shape(X)[0]):
-        dists.append((X[i], dist_func(test, X[i]), Y[i]))
-    dists.sort(key=lambda tup: tup[1])
-    neighbors = []
-    for i in range(k):
-        neighbors.append((dists[i][0], dists[i][1], dists[i][2]))
-        print("Nearest neighbor with the distance ", dists[i][1], " with the label of ", dists[i][2])
-
-    labels = {}
-    for i in neighbors:
-        if i[2] in labels:
-            labels[i[2]] += 1
-            # print("Label ", i[2], " is in dict. Increase count")
+    # implement top k smallest distance
+    for i in range(np.size(Y)):
+        node = Node(dist_func(test, X[i]), Y[i])
+        if len(dists) < k:
+            heapq.heappush(dists, node)
         else:
-            # print("Label ", i[2], " is currently not in dict. Adding")
-            labels[i[2]] = 1
+            if node < dists[0]: continue
+            dists[0] = node
+            heapq.heapify(dists)
 
+    # for i in range(D):
+    #     dists.append(Node(dist_func(test, X[i]), Y[i]))
+    # dists.sort()
+
+    # counting labels
+    labels = {}
+    for i in range(k):
+        label = dists[i].label
+        if label in labels:
+            labels[label] += 1
+        else:
+            labels[label] = 1
+
+    # find highest label
     max_label = None
     max_label_amount = 0
     for k in labels:
