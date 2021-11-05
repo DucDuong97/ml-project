@@ -5,6 +5,9 @@ import math
 import matplotlib.pyplot as plt
 import time
 import heapq
+import multiprocessing
+from itertools import repeat
+from functools import partial
 
 from dataset import *
 
@@ -43,18 +46,11 @@ class Node(object):
     def __lt__(self, other):
         global cpr_count
         cpr_count += 1
+        # use for k-largest-heap
         return self.dist > other.dist
 
 
 def knn(test, X, k, Y, dist_func):
-    """
-    Find k nearest neighbors of point test
-
-    :param test: Calculating point
-    :param X:
-    :param k: Number of nearest neighbors need to find
-    :return: List of k nearest neighbors (may contain the test point itself)
-    """
     dists = []
     # implement top k smallest distance
     for i in range(np.size(Y)):
@@ -86,7 +82,7 @@ def knn(test, X, k, Y, dist_func):
         if labels[k] > max_label_amount:
             max_label = k
             max_label_amount = labels[k]
-    print("The label prediction is ", max_label)
+    print("The label prediction is ", max_label, end="\r")
     return max_label
 
 
@@ -106,9 +102,18 @@ class KNN:
         :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
         :return: Labels for all points in X. Array of shape (n',)
         """
+        print(f"k: {self.k}")
         res = []
-        for x in X:
-            res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
+        pool = multiprocessing.Pool(4)
+
+        # res = pool.starmap(knn, zip(X, repeat(self.train_x), repeat(self.k), repeat(self.train_y), repeat(self.dist_function)))
+        
+        res = pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
+        
+        # for x in X:
+        #     res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
+        
+        print()
         return res
 
 class Weight_KNN:
@@ -138,6 +143,7 @@ def accuracy(clf, X, Y):
         if (pred_y == y):
             sum += 1
     D = np.size(Y)
+    print(f"Accuracy: {sum}/{D}")
     return sum / D
 
 
@@ -155,6 +161,7 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     data_size = np.size(Y)
     fold_size = (int) (data_size / m)
 
+    tic = time.perf_counter()
 
     accuracies = []
     for i in range(m):
@@ -172,8 +179,16 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
         clf.fit(image_train_set, label_train_set)
         accuracies.append(metric(clf, image_test_set, label_test_set))
 
+    toc = time.perf_counter()
+    print()
+    print(f"Execute in {toc - tic:0.4f} seconds")
+    print(f"Compare Count: {cpr_count}")
+
     # calculating average accuracy
-    return sum(accuracies) / len(accuracies)
+    acc = sum(accuracies) / len(accuracies)
+    print(f"Acc: {acc}")
+    print(f"--------------------------------------")
+    return acc
 
 
 def print_samples(train_x, train_y):
@@ -202,9 +217,12 @@ def convolution(x, filter):
 
 def main(args):
     # Set up data
+    data_size = 8000
+    print(f"data size: {data_size}")
+
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
-    train_x = train_x.numpy()[0:20]
-    train_y = np.array(train_y)[0:20]
+    train_x = train_x.numpy()[0:data_size]
+    train_y = np.array(train_y)[0:data_size]
 
     # test_x, test_y = get_strange_symbols_test_data(root=args.test_data)
     # test_x = test_x.numpy()
@@ -217,6 +235,9 @@ def main(args):
         knn_set.append(knn)
 
     # Plot results
+
+    cross_validation(knn_set[4], train_x, train_y)
+
     # TODO: a
     # print_samples(train_x, train_y)
 
