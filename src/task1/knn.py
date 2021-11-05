@@ -13,7 +13,7 @@ from dataset import *
 
 
 def euclidean_distance(a, b):
-    return np.linalg.norm(a-b)
+    return np.linalg.norm(a - b)
 
 
 def manhattan_distance(a, b):
@@ -33,7 +33,9 @@ def minkows_distance(a, b):
         dist += abs(a[i] - b[i]) ** 3
     return dist ** (1 / 3)
 
+
 cpr_count = 0
+
 
 class Node(object):
     def __init__(self, dist: float, label: int):
@@ -86,6 +88,38 @@ def knn(test, X, k, Y, dist_func):
     return max_label
 
 
+def knn_weight(test, X, k, Y, dist_func, inverse_modifier):
+    dists = []
+    # implement top k smallest distance
+    for i in range(np.size(Y)):
+        node = Node(dist_func(test, X[i]), Y[i])
+        if len(dists) < k:
+            heapq.heappush(dists, node)
+        else:
+            if node < dists[0]: continue
+            dists[0] = node
+            heapq.heapify(dists)
+
+    # summing up all labels
+    labels = {}
+    for i in range(k):
+        label = dists[i].label
+        if label in labels:
+            labels[label] += inverse_modifier / dists[i].dist
+        else:
+            labels[label] = inverse_modifier / dists[i].dist
+
+    # find highest label
+    max_label = None
+    max_label_weight = 0
+    for k in labels:
+        if labels[k] > max_label_weight:
+            max_label = k
+            max_label_weight = labels[k]
+    print("The label prediction is ", max_label, end="\r")
+    return max_label
+
+
 class KNN:
     def __init__(self, k=5, dist_function=euclidean_distance):
         self.k = k
@@ -107,19 +141,21 @@ class KNN:
         pool = multiprocessing.Pool(4)
 
         # res = pool.starmap(knn, zip(X, repeat(self.train_x), repeat(self.k), repeat(self.train_y), repeat(self.dist_function)))
-        
+
         res = pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
-        
+
         # for x in X:
         #     res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
-        
+
         print()
         return res
 
+
 class Weight_KNN:
-    def __init__(self, k=5, dist_function=euclidean_distance):
+    def __init__(self, k=5, dist_function=euclidean_distance, inverse_modifier=10):
         self.k = k
         self.dist_function = dist_function
+        self.inverse_modifier = inverse_modifier
 
     def fit(self, X, y):
         self.train_x = X
@@ -133,7 +169,13 @@ class Weight_KNN:
         :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
         :return: Labels for all points in X. Array of shape (n',)
         """
-        raise NotImplementedError('TODO')
+        print(f"k: {self.k}")
+        res = []
+        pool = multiprocessing.Pool(4)
+        res = pool.map(partial(knn_weight, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function, inverse_modifier=self.inverse_modifier), X)
+
+        print()
+        return res
 
 
 def accuracy(clf, X, Y):
@@ -159,14 +201,14 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     :return: The average metric over all m folds.
     """
     data_size = np.size(Y)
-    fold_size = (int) (data_size / m)
+    fold_size = (int)(data_size / m)
 
     tic = time.perf_counter()
 
     accuracies = []
     for i in range(m):
-        include_idx = np.arange(i*fold_size,fold_size + i*fold_size)
-        mask = np.array([(i in include_idx) for i in range(data_size)])     ###
+        include_idx = np.arange(i * fold_size, fold_size + i * fold_size)
+        mask = np.array([(i in include_idx) for i in range(data_size)])
         # retrieving the test data for each iteration
         image_test_set = X[mask]
         label_test_set = Y[mask]
@@ -231,7 +273,8 @@ def main(args):
     # Load and evaluate the classifier for different k
     knn_set = []
     for i in range(1, 11):
-        knn = KNN(k=i)
+        # knn = KNN(k=i)
+        knn = Weight_KNN(k=i, inverse_modifier=100)
         knn_set.append(knn)
 
     # Plot results
@@ -268,7 +311,7 @@ def main(args):
     # plt.title('Accuracy for different Distance Function in KNN')
     # plt.show()
 
-    #TODO: g
+    # TODO: g
     # blur_filter = []
     # edge_filter = []
     # blur_X = map(lambda x: convolution(x, blur_filter),train_x)
@@ -294,6 +337,7 @@ def main(args):
     # plt.show()
 
     # TODO: i
+
 
 if __name__ == '__main__':
     import argparse
