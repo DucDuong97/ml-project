@@ -172,7 +172,8 @@ class Weight_KNN:
         print(f"k: {self.k}")
         res = []
         pool = multiprocessing.Pool(4)
-        res = pool.map(partial(knn_weight, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function, inverse_modifier=self.inverse_modifier), X)
+        res = pool.map(partial(knn_weight, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function,
+                               inverse_modifier=self.inverse_modifier), X)
 
         print()
         return res
@@ -233,23 +234,41 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     return acc
 
 
+# def print_samples(train_x, train_y):
+#     unique_y = np.unique(train_y)
+#     label_y = unique_y[2]
+#
+#     imgsList = []
+#     for x, y in zip(train_x, train_y):
+#         if y == label_y:
+#             imgsList.append(x)
+#         if len(imgsList) == 16:
+#             break
+#
+#     imgs = np.array(imgsList)
+#     _, axs = plt.subplots(4, 4, figsize=(8, 6))
+#     axs = axs.flatten()
+#     for img, ax in zip(imgs, axs):
+#         ax.imshow(np.squeeze(img))
+#     plt.show()
+
 def print_samples(train_x, train_y):
-    unique_y = np.unique(train_y)
-    label_y = unique_y[2]
+    unique_labels_set = np.unique(train_y)
 
-    imgsList = []
-    for x, y in zip(train_x, train_y):
-        if y == label_y:
-            imgsList.append(x)
-        if len(imgsList) == 16:
-            break
-
-    imgs = np.array(imgsList)
-    _, axs = plt.subplots(4, 4, figsize=(8, 6))
-    axs = axs.flatten()
-    for img, ax in zip(imgs, axs):
-        ax.imshow(np.squeeze(img))
-    plt.show()
+    samples = {}
+    # Retrieving 4 images for each class
+    for i in unique_labels_set:
+        samples[i] = np.concatenate(np.where(train_y == i), axis=0)[:4]
+    for i in samples:
+        imgsList = []
+        for j in samples[i]:
+            imgsList.append(train_x[j])
+        _, axs = plt.subplots(2, 2, figsize=(8, 6))
+        axs = axs.flatten()
+        for img, ax in zip(imgsList, axs):
+            ax.imshow(np.squeeze(img))
+        plt.title("Image samples for class ", i)
+        plt.show()
 
 
 def convolution(x, filter):
@@ -284,7 +303,7 @@ def main(args):
     # TODO: a
     # print_samples(train_x, train_y)
 
-    # TODO: c
+    # # TODO: c
     # k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     # acc = []
     # for i in range(0, 10):
@@ -294,13 +313,13 @@ def main(args):
     # plt.ylabel('accuracy')
     # plt.title('Accuracy for different k in KNN')
     # plt.show()
-
-    # TODO: e
+    #
+    # # TODO: e
     # best_k = 5 # replace when knowing the best k
     # knn_euclid = KNN(best_k, euclidean_distance)
     # knn_manhat = KNN(best_k, manhattan_distance)
     # knn_minkow = KNN(best_k, minkows_distance)
-
+    #
     # dist = ['knn_euclid','knn_manhat','knn_minkow']
     # acc = [cross_validation(knn_euclid, train_x, train_y),
     #        cross_validation(knn_manhat, train_x, train_y),
