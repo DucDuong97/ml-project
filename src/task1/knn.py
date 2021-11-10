@@ -52,7 +52,7 @@ class Node(object):
         return self.dist > other.dist
 
 
-def knn(test, X, k, Y, dist_func):
+def knn(test, X, k, Y, dist_func, return_false=False):
     dists = []
     # implement top k smallest distance
     for i in range(np.size(Y)):
@@ -85,7 +85,19 @@ def knn(test, X, k, Y, dist_func):
             max_label = k
             max_label_amount = labels[k]
     print("The label prediction is ", max_label, end="\r")
-    return max_label
+    if not return_false:
+        return max_label
+    else:
+        return max_label, dists
+
+
+def get_missclassified(clf, X, Y):
+    miss_classified = []
+    pred_Y = clf.predict(X)
+    for pred_y, y in zip(pred_Y, Y):
+        if pred_y != y:
+            miss_classified.append((X, y, pred_y))
+    return random.sample(5)
 
 
 def knn_weight(test, X, k, Y, dist_func, inverse_modifier):
@@ -121,9 +133,10 @@ def knn_weight(test, X, k, Y, dist_func, inverse_modifier):
 
 
 class KNN:
-    def __init__(self, k=5, dist_function=euclidean_distance):
+    def __init__(self, k=5, dist_function=euclidean_distance, return_false=False):
         self.k = k
         self.dist_function = dist_function
+        self.return_false = return_false
 
     def fit(self, X, y):
         self.train_x = X
@@ -356,6 +369,10 @@ def main(args):
     # plt.show()
 
     # TODO: i
+    # best_k = 5 # replace when knowing the best k
+    # knn_euclid = KNN(best_k, euclidean_distance)
+    # knn_manhat = KNN(best_k, manhattan_distance)
+    # knn_minkow = KNN(best_k, minkows_distance)
 
 
 if __name__ == '__main__':
