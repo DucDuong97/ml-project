@@ -180,22 +180,22 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     print(f"--------------------------------------")
     return acc
 
-def single_validation(i, m, clf, X, Y, metric=accuracy):
-        data_size = np.size(Y)
-        fold_size = (int) (data_size / m)
-        include_idx = np.arange(i*fold_size,fold_size + i*fold_size)
-        mask = np.array([(i in include_idx) for i in range(data_size)])     ###
-        # retrieving the test data for each iteration
-        image_test_set = X[mask]
-        label_test_set = Y[mask]
+def single_validation(i, m, clf, X, Y, metric):
+    data_size = np.size(Y)
+    fold_size = (int) (data_size / m)
+    include_idx = np.arange(i*fold_size,fold_size + i*fold_size)
+    mask = np.array([(i in include_idx) for i in range(data_size)])     ###
+    # retrieving the test data for each iteration
+    image_test_set = X[mask]
+    label_test_set = Y[mask]
 
-        # construct a training_set
-        image_train_set = X[~mask]
-        label_train_set = Y[~mask]
+    # construct a training_set
+    image_train_set = X[~mask]
+    label_train_set = Y[~mask]
 
-        # using the training data and evaluate using given metric
-        clf.fit(image_train_set, label_train_set)
-        return metric(clf, image_test_set, label_test_set)
+    # using the training data and evaluate using given metric
+    clf.fit(image_train_set, label_train_set)
+    return metric(clf, image_test_set, label_test_set)
 
 
 def print_samples(train_x, train_y):
@@ -217,9 +217,18 @@ def print_samples(train_x, train_y):
     plt.show()
 
 
-def convolution(x, filter):
-    squeeze_x = np.squeeze(x)
-    # TODO
+def convolve(x, filter):
+    x = np.squeeze(x)
+    x_h, x_w = x.shape
+    filter = np.flipud(np.fliplr(filter))
+    filter_h, filter_w = filter.shape
+    res_h = x_h - filter_h + 1
+    res_w = x_w - filter_w + 1
+    res = np.zeros((res_h, res_w))
+    for i in range(res_h):
+        for j in range(res_w):
+            res[i,j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
+    return res
 
 
 def main(args):
@@ -243,7 +252,7 @@ def main(args):
 
     # Plot results
 
-    cross_validation(knn_set[4], train_x, train_y)
+    # cross_validation(knn_set[4], train_x, train_y)
 
     # TODO: a
     # print_samples(train_x, train_y)
@@ -276,10 +285,10 @@ def main(args):
     # plt.show()
 
     #TODO: g
-    # blur_filter = []
-    # edge_filter = []
-    # blur_X = map(lambda x: convolution(x, blur_filter),train_x)
-    # edge_X = map(lambda x: convolution(x, edge_filter),train_x)
+    # blur_filter = np.ones((3,3)) * 1/9
+    # edge_filter = np.array([[-1,0,1],[0,0,0],[1,0,-1]])
+    # blur_X = np.array([convolve(i, blur_filter) for i in train_x]) ###
+    # edge_X = np.array([convolve(i, edge_filter) for i in train_x]) ###
     # filter = ['no filter','blur','detect edge']
     # acc = [cross_validation(knn_euclid, train_x, train_y),
     #         cross_validation(knn_euclid, blur_X, train_y),
