@@ -33,7 +33,7 @@ def minkows_distance(a, b):
         dist += abs(a[i] - b[i]) ** 3
     return dist ** (1 / 3)
 
-cpr_count = 0
+# cpr_count = 0
 
 class Node(object):
     def __init__(self, dist: float, label: int):
@@ -45,7 +45,7 @@ class Node(object):
 
     def __lt__(self, other):
         global cpr_count
-        cpr_count += 1
+        # cpr_count += 1
         # use for k-largest-heap
         return self.dist > other.dist
 
@@ -104,14 +104,14 @@ class KNN:
         """
         print(f"k: {self.k}")
         res = []
-        pool = multiprocessing.Pool(4)
+        # pool = multiprocessing.Pool(4)
 
         # res = pool.starmap(knn, zip(X, repeat(self.train_x), repeat(self.k), repeat(self.train_y), repeat(self.dist_function)))
         
-        res = pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
+        # res = pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
         
-        # for x in X:
-        #     res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
+        for x in X:
+            res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
         
         print()
         return res
@@ -163,8 +163,26 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
 
     tic = time.perf_counter()
 
-    accuracies = []
-    for i in range(m):
+    pool = multiprocessing.Pool(m)
+    accuracies = pool.map(partial(single_validation, X=X, m=m, Y=Y, clf=clf, metric=metric), range(m))
+
+    # for i in range(m):
+    #     accuracies.append(single_validation(i, m, clf, X, Y, metric))
+
+    toc = time.perf_counter()
+    print()
+    print(f"Execute in {toc - tic:0.4f} seconds")
+    # print(f"Compare Count: {cpr_count}")
+
+    # calculating average accuracy
+    acc = sum(accuracies) / len(accuracies)
+    print(f"Acc: {acc}")
+    print(f"--------------------------------------")
+    return acc
+
+def single_validation(i, m, clf, X, Y, metric=accuracy):
+        data_size = np.size(Y)
+        fold_size = (int) (data_size / m)
         include_idx = np.arange(i*fold_size,fold_size + i*fold_size)
         mask = np.array([(i in include_idx) for i in range(data_size)])     ###
         # retrieving the test data for each iteration
@@ -177,18 +195,7 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
 
         # using the training data and evaluate using given metric
         clf.fit(image_train_set, label_train_set)
-        accuracies.append(metric(clf, image_test_set, label_test_set))
-
-    toc = time.perf_counter()
-    print()
-    print(f"Execute in {toc - tic:0.4f} seconds")
-    print(f"Compare Count: {cpr_count}")
-
-    # calculating average accuracy
-    acc = sum(accuracies) / len(accuracies)
-    print(f"Acc: {acc}")
-    print(f"--------------------------------------")
-    return acc
+        return metric(clf, image_test_set, label_test_set)
 
 
 def print_samples(train_x, train_y):
