@@ -17,21 +17,23 @@ def euclidean_distance(a, b):
 
 
 def manhattan_distance(a, b):
-    dist = 0.0
-    a = a.flatten()
-    b = b.flatten()
-    for i in range(len(a)):
-        dist += abs(a[i] - b[i])
-    return dist
+    # dist = 0.0
+    # a = a.flatten()
+    # b = b.flatten()
+    # for i in range(len(a)):
+    #     dist += abs(a[i] - b[i])
+    # return dist
+    return np.linalg.norm(a - b, ord=1)
 
 
 def minkows_distance(a, b):
-    dist = 0.0
-    a = a.flatten()
-    b = b.flatten()
-    for i in range(len(a)):
-        dist += abs(a[i] - b[i]) ** 3
-    return dist ** (1 / 3)
+    # dist = 0.0
+    # a = a.flatten()
+    # b = b.flatten()
+    # for i in range(len(a)):
+    #     dist += abs(a[i] - b[i]) ** 3
+    # return dist ** (1 / 3)
+    return np.linalg.norm(a - b, ord=3)
 
 
 cpr_count = 0
@@ -94,7 +96,7 @@ def knn(test, X, k, Y, dist_func, return_false=False):
 def get_missclassified(clf, X, Y):
     miss_classified = []
     pred_Y = clf.predict(X)
-    for pred_y, y in zip(pred_Y, Y):
+    for pred_y, y in zip(pred_Y[0], Y):
         if pred_y != y:
             miss_classified.append((X, y, pred_y))
     return random.sample(5)
