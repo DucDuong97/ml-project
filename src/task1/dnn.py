@@ -3,6 +3,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from sklearn.metrics import confusion_matrix
+from pandas import DataFrame
+import seaborn as sn
+import matplotlib.pyplot as plt
+import numpy as np
 
 from dataset import get_strange_symbols_train_loader, get_strange_symbols_test_data
 
@@ -81,7 +86,14 @@ if __name__ == '__main__':
 
         model.train()
 
-checkAccuracy(trainloader, model)
+    # checkAccuracy(trainloader, model)
+
+    def accuracy(labels, preds):
+        cm = confusion_matrix(labels, preds)
+        df_cm = DataFrame(cm)
+        sn.heatmap(df_cm, cmap='Oranges', annot=True)
+        plt.show()
+        
 
     # The code above is just given as a hint, you may change or adapt it.
     # Nevertheless, you are recommended to use the above loader with some batch size of choice.
