@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+import torch
 import math
 import matplotlib.pyplot as plt
 import time
@@ -66,24 +67,8 @@ def knn(test, X, k, Y, dist_func):
     #     dists.append(Node(dist_func(test, X[i]), Y[i]))
     # dists.sort()
 
-    # counting labels
-    labels = {}
-    for i in range(k):
-        label = dists[i].label
-        if label in labels:
-            labels[label] += 1
-        else:
-            labels[label] = 1
-
-    # find highest label
-    max_label = None
-    max_label_amount = 0
-    for k in labels:
-        if labels[k] > max_label_amount:
-            max_label = k
-            max_label_amount = labels[k]
-    print("The label prediction is ", max_label, end="\r")
-    return max_label
+    labels = [node.label for node in dists]
+    return max(labels, key = labels.count)
 
 
 class KNN:
@@ -102,19 +87,9 @@ class KNN:
         :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
         :return: Labels for all points in X. Array of shape (n',)
         """
-        print(f"k: {self.k}")
-        res = []
-        # pool = multiprocessing.Pool(4)
-
-        # res = pool.starmap(knn, zip(X, repeat(self.train_x), repeat(self.k), repeat(self.train_y), repeat(self.dist_function)))
-        
-        # res = pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
-        
-        for x in X:
-            res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
-        
-        print()
-        return res
+        # pool = multiprocessing.Pool(2)
+        # return pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
+        return [knn(x, self.train_x, self.k, self.train_y, self.dist_function) for x in X]
 
 class Weight_KNN:
     def __init__(self, k=5, dist_function=euclidean_distance):
