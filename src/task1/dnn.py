@@ -38,7 +38,7 @@ if __name__ == '__main__':
     output_size = 15
     learning_rate = 0.001
     batch_size = 128
-    num_epoch = 8
+    num_epoch = 4
 
     def cross_validation(model, X, Y, lr, num_epochs, m=4):
         preds_total = []
@@ -74,9 +74,10 @@ if __name__ == '__main__':
             preds_total.extend(preds)
             labls_total.extend(yb)
             val_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
-            print(val_loss)
+            acc = (torch.cat(preds) == torch.cat(yb)).sum() / len(torch.cat(yb))
+            print(f"Loss: {val_loss}, Acc: {acc}")
         
-        cf_matrix(torch.cat(preds_total),torch.cat(labls_total))
+        # cf_matrix(torch.cat(preds_total),torch.cat(labls_total))
 
     
     def cf_matrix(labels, preds):
