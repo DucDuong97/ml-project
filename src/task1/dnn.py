@@ -3,20 +3,24 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from torch.utils.data import DataLoader, SubsetRandomSampler, TensorDataset
+import numpy as np
+import math
+
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import KFold
+
 from pandas import DataFrame
 import seaborn as sn
 import matplotlib.pyplot as plt
-import numpy as np
 
-from dataset import get_strange_symbols_train_loader, get_strange_symbols_test_data
+from dataset import get_strange_symbols_train_loader, get_strange_symbols_train_data
 
 if __name__ == '__main__':
+
     # executing this prepares a loader, which you can iterate to access the data
-    trainloader = get_strange_symbols_train_loader(batch_size=128)
+    train_x, train_y = get_strange_symbols_train_data()
 
-
-    # TODO
     # Now it's up to you to define the network and use the data to train it.
     class DNN(nn.Module):
         def __init__(self, input_layer, output_layer):
@@ -36,64 +40,68 @@ if __name__ == '__main__':
     batch_size = 128
     num_epoch = 8
 
-    # Create DNN-instance
-    model = DNN(input_size, output_size)
-    # Loss function
-    loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    def cross_validation(model, X, Y, lr, num_epochs, m=4):
+        preds_total = []
+        labls_total = []
 
-    # we want to fully iterate the loader multiple times, called epochs, to train successfully
-    for epoch in range(num_epoch):
-        # here we fully iterate the loader each time
-        for i, data in enumerate(trainloader):
-            i = i  # i is just a counter you may use for logging purposes or such
-            img, label = data  # data is a batch of samples, split into an image tensor and label tensor
+        for fold, (train_idx,val_idx) in enumerate(KFold(n_splits=m,shuffle=True).split(X, Y)):
 
-            # As you may notice, img is of shape n x 1 x height x width, which means a batch of n matrices.
-            # But fully connected neural network layers are designed to process vectors. You need to take care of that!
-            # Also libraries like matplotlib usually expect images to be of shape height x width x channels.
-            img = img.reshape(img.shape[0], -1)
+            model = DNN(input_size,output_size)
+            print('Fold {}'.format(fold + 1))
+            dataset = TensorDataset(X,Y)
 
-            # forward propagation
-            scores = model(img.float())
-            loss = loss_func(scores, label)
+            train_sampler = SubsetRandomSampler(train_idx)
+            test_sampler = SubsetRandomSampler(val_idx)
+            train_loader = DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
+            test_loader = DataLoader(dataset, batch_size=batch_size, sampler=test_sampler)
+            
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            model.to(device)
+            optimizer = optim.Adam(model.parameters(), lr)
+            loss_func = nn.CrossEntropyLoss()
 
-            # zero previous gradients
-            optimizer.zero_grad()
+            history = {'train_loss': [], 'test_loss': [],'train_acc':[],'test_acc':[]}
 
-            # back-propagation
-            loss.backward()
+            for epoch in range(num_epochs):
+                model.train()
+                for xb, yb in train_loader:
+                    loss_batch(model, loss_func, xb, yb, optimizer)
 
-            # adam-optimizer's step
-            optimizer.step()
+            model.eval()
+            with torch.no_grad():
+                losses, preds, yb, nums = zip(*[loss_batch(model, loss_func, xb, yb) for xb, yb in test_loader])
+            
+            preds_total.extend(preds)
+            labls_total.extend(yb)
+            val_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
+            print(val_loss)
+        
+        cf_matrix(torch.cat(preds_total),torch.cat(labls_total))
 
-    def checkAccuracy(loader, model):
-        num_correct = 0
-        num_sample = 0
-        model.eval()
-        with torch.no_grad():
-            for x, y in loader:
-                x = x.reshape(x.shape[0], -1)
-                scores = model(x.float())
-                _, preds = scores.max(1)
-                num_correct += (preds == y).sum()
-                num_sample += preds.size(0)
-
-                print("Total scanned samples: ", num_sample)
-                print("Correct samples: ", num_correct)
-                print("Accuracy: ", float(num_correct) / float(num_sample))
-                print("----------------------------------------------------------")
-
-        model.train()
-
-    # checkAccuracy(trainloader, model)
-
-    def accuracy(labels, preds):
+    
+    def cf_matrix(labels, preds):
+        plt.figure(figsize=(12,8))
         cm = confusion_matrix(labels, preds)
         df_cm = DataFrame(cm)
         sn.heatmap(df_cm, cmap='Oranges', annot=True)
         plt.show()
-        
+
+
+    def loss_batch(model, loss_func, xb, yb, opt=None):
+        xb = xb.reshape(xb.shape[0], -1).float() #shape 128 x 784
+        scores = model(xb)
+        preds = torch.argmax(scores, dim=1)
+        loss = loss_func(scores, yb)
+
+        if opt is not None:
+            loss.backward()
+            opt.step()
+            opt.zero_grad()
+
+        return loss.item(), preds, yb, len(xb)
+
+
+    cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
 
     # The code above is just given as a hint, you may change or adapt it.
     # Nevertheless, you are recommended to use the above loader with some batch size of choice.
