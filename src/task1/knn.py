@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+import torch
 import math
 import matplotlib.pyplot as plt
 import time
@@ -282,7 +283,7 @@ def print_samples(train_x, train_y):
         axs = axs.flatten()
         for img, ax in zip(imgsList, axs):
             ax.imshow(np.squeeze(img))
-        plt.title("Image samples for class ", i)
+        #plt.title("Image samples for class ", i)
         plt.show()
 
 
@@ -313,10 +314,10 @@ def main(args):
 
     # Plot results
 
-    cross_validation(knn_set[4], train_x, train_y)
+    #cross_validation(knn_set[4], train_x, train_y)
 
     # TODO: a
-    # print_samples(train_x, train_y)
+    print_samples(train_x, train_y)
 
     # # TODO: c
     # k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

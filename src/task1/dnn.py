@@ -10,7 +10,6 @@ if __name__ == '__main__':
     # executing this prepares a loader, which you can iterate to access the data
     trainloader = get_strange_symbols_train_loader(batch_size=128)
 
-
     # TODO
     # Now it's up to you to define the network and use the data to train it.
     class DNN(nn.Module):
