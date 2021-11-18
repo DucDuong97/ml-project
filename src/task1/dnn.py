@@ -25,6 +25,8 @@ if __name__ == '__main__':
     class DNN(nn.Module):
         def __init__(self, input_layer, output_layer):
             super(DNN, self).__init__()
+            self.input_layer = input_layer
+            self.output_layer = output_layer
             self.fc1 = nn.Linear(input_layer, 256)
             self.fc2 = nn.Linear(256, output_layer)
 
@@ -32,6 +34,9 @@ if __name__ == '__main__':
             x = F.relu(self.fc1(x))
             x = self.fc2(x)
             return x
+
+        def clone(self):
+            return DNN(self.input_layer, self.output_layer)
 
     # Hyperparameters
     input_size = 784
@@ -41,12 +46,12 @@ if __name__ == '__main__':
     num_epoch = 4
 
     def cross_validation(model, X, Y, lr, num_epochs, m=4):
-        preds_total = []
-        labls_total = []
+
+        report_printed = False
 
         for fold, (train_idx,val_idx) in enumerate(KFold(n_splits=m,shuffle=True).split(X, Y)):
 
-            model = DNN(input_size,output_size)
+            model = model.clone()
             print('Fold {}'.format(fold + 1))
             dataset = TensorDataset(X,Y)
 
@@ -62,29 +67,33 @@ if __name__ == '__main__':
 
             history = {'train_loss': [], 'test_loss': [],'train_acc':[],'test_acc':[]}
 
+            # get the result of last epoch to produce analytics
+            preds = []
+            actuals = []
+            nums = None
             for epoch in range(num_epochs):
                 model.train()
                 for xb, yb in train_loader:
                     loss_batch(model, loss_func, xb, yb, optimizer)
+                
+                model.eval()
+                with torch.no_grad():
+                    losses, preds, actuals, nums = zip(*[loss_batch(model, loss_func, xb, yb) for xb, yb in test_loader])
+                valid_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
+                acc = (torch.cat(preds) == torch.cat(actuals)).float().mean()
+                print(f"Epoch {epoch} - Loss: {valid_loss}, Acc: {acc}")
 
-            model.eval()
-            with torch.no_grad():
-                losses, preds, yb, nums = zip(*[loss_batch(model, loss_func, xb, yb) for xb, yb in test_loader])
-            
-            preds_total.extend(preds)
-            labls_total.extend(yb)
-            val_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
-            acc = (torch.cat(preds) == torch.cat(yb)).sum() / len(torch.cat(yb))
-            print(f"Loss: {val_loss}, Acc: {acc}")
-        
-        # cf_matrix(torch.cat(preds_total),torch.cat(labls_total))
+            # we will plot the result only on the last fold
+            if not report_printed and fold == m-1:
+                plot_report(torch.cat(preds), torch.cat(actuals))
+                report_printed = not report_printed
 
     
-    def cf_matrix(labels, preds):
+    def plot_report(labels, preds):
         plt.figure(figsize=(12,8))
         cm = confusion_matrix(labels, preds)
         df_cm = DataFrame(cm)
-        sn.heatmap(df_cm, cmap='Oranges', annot=True)
+        sn.heatmap(df_cm, cmap='Oranges', annot=True, fmt='d')
         plt.show()
 
 
