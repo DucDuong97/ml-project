@@ -50,6 +50,7 @@ if __name__ == '__main__':
         report_printed = False
 
         for fold, (train_idx,val_idx) in enumerate(KFold(n_splits=m,shuffle=True).split(X, Y)):
+            print()
 
             model = model.clone()
             print('Fold {}'.format(fold + 1))
@@ -65,9 +66,11 @@ if __name__ == '__main__':
             optimizer = optim.Adam(model.parameters(), lr)
             loss_func = nn.CrossEntropyLoss()
 
-            history = {'train_loss': [], 'test_loss': [],'train_acc':[],'test_acc':[]}
-
             # get the result of last epoch to produce analytics
+            epoch_losses = []
+            epoch_accuracies = []
+            confs = []
+            imgs = []
             preds = []
             actuals = []
             nums = None
@@ -78,29 +81,78 @@ if __name__ == '__main__':
                 
                 model.eval()
                 with torch.no_grad():
-                    losses, preds, actuals, nums = zip(*[loss_batch(model, loss_func, xb, yb) for xb, yb in test_loader])
+                    losses, confs, imgs, preds, actuals, nums = zip(*[loss_batch(model, loss_func, xb, yb) for xb, yb in test_loader])
                 valid_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
                 acc = (torch.cat(preds) == torch.cat(actuals)).float().mean()
-                print(f"Epoch {epoch} - Loss: {valid_loss}, Acc: {acc}")
+                epoch_accuracies.append(acc)
+                epoch_losses.append(valid_loss)
+                print(f"Epoch {epoch} - Loss: {round(valid_loss, 2)}, Acc: {round(acc.item(), 2)}")
 
+            print("------------------------------")
             # we will plot the result only on the last fold
             if not report_printed and fold == m-1:
-                plot_report(torch.cat(preds), torch.cat(actuals))
                 report_printed = not report_printed
+                confs = torch.cat(confs).numpy()
+                imgs = torch.cat(imgs).numpy()
+                preds = torch.cat(preds).numpy()
+                actuals = torch.cat(actuals).numpy()
 
+                # plot_losses_and_accs(epoch_losses, epoch_accuracies)
+                # plot_report(preds, actuals)
+                plot_confident_imgs(confs, imgs, preds, actuals)
+
+
+    def plot_losses_and_accs(losses, accuracies):
+        _, axs = plt.subplots(2, figsize=(8, 6), sharex=True)
+        axs[0].plot(range(len(losses)), losses)
+        plt.setp(axs[0], ylabel='loss')
+        axs[0].set_title('Loss pre Epoch')
+        axs[1].plot(range(len(accuracies)), accuracies)
+        plt.setp(axs[1], ylabel='accuracy')
+        plt.setp(axs[1], xlabel='epoch')
+        axs[1].set_title('Accuracy pre Epoch')
+        plt.show()
     
     def plot_report(labels, preds):
-        plt.figure(figsize=(12,8))
+        plt.figure(figsize=(8,6))
         cm = confusion_matrix(labels, preds)
         df_cm = DataFrame(cm)
         sn.heatmap(df_cm, cmap='Oranges', annot=True, fmt='d')
         plt.show()
 
+    def plot_confident_imgs(confs, imgs, preds, actuals):
+        classes = np.unique(actuals)
+        for clazz in classes:
+            zips = zip(confs, imgs, preds,actuals)
+            class_member =  list(filter(lambda x: x[2] == clazz,zips))
+            class_correct = list(filter(lambda x: x[2] == x[3],class_member))
+            correct_most_10_confident = sorted(class_correct, key=lambda x: x[0], reverse=True)[:10]
+
+            class_incorrect = list(filter(lambda x: x[2] != x[3],class_member))
+            incorrect_least_10_confident = sorted(class_incorrect, key=lambda x: x[0], reverse=False)[:10]
+
+            fig, axs = plt.subplots(2,10, figsize=(12, 6), sharey=True)
+            fig.suptitle(f"Class {clazz}")
+            for (conf,img,_,_), ax in zip(correct_most_10_confident, axs[0]):
+                ax.imshow(img.reshape((28,28)))
+                ax.set_title(round(conf,2))
+            axs[0,0].set_ylabel("Correct most Conf")
+
+            for (conf,img,_,actual), bx in zip(incorrect_least_10_confident, axs[1]):
+                bx.imshow(img.reshape((28,28)))
+                bx.set_title(round(conf,2))
+                bx.set_xlabel(actual)
+            axs[1,0].set_ylabel("Incorrect least Conf")
+            plt.show()
+                
+
 
     def loss_batch(model, loss_func, xb, yb, opt=None):
         xb = xb.reshape(xb.shape[0], -1).float() #shape 128 x 784
         scores = model(xb)
-        preds = torch.argmax(scores, dim=1)
+        softmax_scores = torch.nn.functional.softmax(scores)
+        preds = torch.argmax(softmax_scores, dim=1)
+        confs,_ = torch.max(softmax_scores, dim=1)
         loss = loss_func(scores, yb)
 
         if opt is not None:
@@ -108,7 +160,7 @@ if __name__ == '__main__':
             opt.step()
             opt.zero_grad()
 
-        return loss.item(), preds, yb, len(xb)
+        return loss.item(), confs, xb, preds, yb, len(xb)
 
 
     cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
