@@ -21,6 +21,7 @@ if __name__ == '__main__':
     # executing this prepares a loader, which you can iterate to access the data
     train_x, train_y = get_strange_symbols_train_data()
 
+
     # Now it's up to you to define the network and use the data to train it.
     class DNN(nn.Module):
         def __init__(self, input_layer, output_layer):
@@ -32,52 +33,55 @@ if __name__ == '__main__':
             x = F.relu(self.fc1(x))
             x = self.fc2(x)
             return x
-    
+
+
     class CNN(nn.Module):
         def __init__(self, input_layer, output_layer):
             super(CNN, self).__init__()
-            self.conv1 = nn.Conv2d(input_layer, 16, kernel_size=3, stride=2, padding=1)
-            self.conv2 = nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1)
-            self.conv3 = nn.Conv2d(16, output_layer, kernel_size=3, stride=2, padding=1)
+            self.conv1 = nn.Conv2d(input_layer, 256, kernel_size=3, stride=2, padding=1)
+            self.conv2 = nn.Conv2d(256, 64, kernel_size=3, stride=2, padding=1)
+            self.conv3 = nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1)
+            self.conv4 = nn.Conv2d(32, output_layer, kernel_size=3, stride=2, padding=1)
 
         def forward(self, x):
             x = x.view(-1, 1, 28, 28)
             x = F.relu(self.conv1(x))
             x = F.relu(self.conv2(x))
             x = F.relu(self.conv3(x))
+            x = F.relu(self.conv4(x))
             x = F.avg_pool2d(x, 4)
             return x
+
 
     # Param-, hyperparameters
     input_size = 784
     output_size = 15
-    learning_rate = 0.001
+    learning_rate = 0.01
     batch_size = 128
-    num_epoch = 8
-
+    num_epoch = 64
 
 
     def cross_validation(model, X, Y, lr, num_epochs, m=4):
         preds_total = []
         labls_total = []
 
-        for fold, (train_idx,val_idx) in enumerate(KFold(n_splits=m,shuffle=True).split(X, Y)):
+        for fold, (train_idx, val_idx) in enumerate(KFold(n_splits=m, shuffle=True).split(X, Y)):
 
-            model = DNN(input_size,output_size)
+            model = DNN(input_size, output_size)
             print('Fold {}'.format(fold + 1))
-            dataset = TensorDataset(X,Y)
+            dataset = TensorDataset(X, Y)
 
             train_sampler = SubsetRandomSampler(train_idx)
             test_sampler = SubsetRandomSampler(val_idx)
             train_loader = DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
             test_loader = DataLoader(dataset, batch_size=batch_size, sampler=test_sampler)
-            
+
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             model.to(device)
             optimizer = optim.Adam(model.parameters(), lr)
             loss_func = nn.CrossEntropyLoss()
 
-            history = {'train_loss': [], 'test_loss': [],'train_acc':[],'test_acc':[]}
+            history = {'train_loss': [], 'test_loss': [], 'train_acc': [], 'test_acc': []}
 
             for epoch in range(num_epochs):
                 model.train()
@@ -87,17 +91,17 @@ if __name__ == '__main__':
             model.eval()
             with torch.no_grad():
                 losses, preds, yb, nums = zip(*[loss_batch(model, loss_func, xb, yb) for xb, yb in test_loader])
-            
+
             preds_total.extend(preds)
             labls_total.extend(yb)
             val_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
             print(val_loss)
-        
-        cf_matrix(torch.cat(preds_total),torch.cat(labls_total))
 
-    
+        cf_matrix(torch.cat(preds_total), torch.cat(labls_total))
+
+
     def cf_matrix(labels, preds):
-        plt.figure(figsize=(12,8))
+        plt.figure(figsize=(12, 8))
         cm = confusion_matrix(labels, preds)
         df_cm = DataFrame(cm)
         sn.heatmap(df_cm, cmap='Oranges', annot=True)
@@ -105,7 +109,7 @@ if __name__ == '__main__':
 
 
     def loss_batch(model, loss_func, xb, yb, opt=None):
-        xb = xb.reshape(xb.shape[0], -1).float() #shape 128 x 784
+        xb = xb.reshape(xb.shape[0], -1).float()  # shape 128 x 784
         scores = model(xb)
         preds = torch.argmax(scores, dim=1)
         loss = loss_func(scores, yb)
@@ -118,7 +122,7 @@ if __name__ == '__main__':
         return loss.item(), preds, yb, len(xb)
 
 
-    #cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
+    # cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
     cross_validation(CNN(1, output_size), train_x, train_y, learning_rate, num_epoch)
 
     # The code above is just given as a hint, you may change or adapt it.
