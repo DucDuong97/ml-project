@@ -7,37 +7,31 @@ import matplotlib.pyplot as plt
 import time
 import heapq
 import multiprocessing
-from itertools import repeat
 from functools import partial
 
 from dataset import *
 
 
 def euclidean_distance(a, b):
-    return np.linalg.norm(a - b)
+    return np.linalg.norm(np.squeeze(a - b))
 
 
 def manhattan_distance(a, b):
-    # dist = 0.0
-    # a = a.flatten()
-    # b = b.flatten()
-    # for i in range(len(a)):
-    #     dist += abs(a[i] - b[i])
-    # return dist
-    return np.linalg.norm(a - b, ord=1)
+    
+    return np.linalg.norm(np.squeeze(a - b), 1)
 
 
 def minkows_distance(a, b):
-    # dist = 0.0
-    # a = a.flatten()
-    # b = b.flatten()
-    # for i in range(len(a)):
-    #     dist += abs(a[i] - b[i]) ** 3
-    # return dist ** (1 / 3)
-    return np.linalg.norm(a - b, ord=3)
+    dist = 0.0
+    a = a.flatten()
+    b = b.flatten()
+    for i in range(len(a)):
+        dist += abs(a[i] - b[i]) ** 3
+    return dist ** (1 / 3)
+    # return np.linalg.norm(np.squeeze(a - b), 3)
 
 
-cpr_count = 0
+# cpr_count = 0
 
 
 class Node(object):
@@ -50,7 +44,7 @@ class Node(object):
 
     def __lt__(self, other):
         global cpr_count
-        cpr_count += 1
+        # cpr_count += 1
         # use for k-largest-heap
         return self.dist > other.dist
 
@@ -71,23 +65,8 @@ def knn(test, X, k, Y, dist_func, return_false=False):
     #     dists.append(Node(dist_func(test, X[i]), Y[i]))
     # dists.sort()
 
-    # counting labels
-    labels = {}
-    for i in range(k):
-        label = dists[i].label
-        if label in labels:
-            labels[label] += 1
-        else:
-            labels[label] = 1
-
-    # find highest label
-    max_label = None
-    max_label_amount = 0
-    for k in labels:
-        if labels[k] > max_label_amount:
-            max_label = k
-            max_label_amount = labels[k]
-    print("The label prediction is ", max_label, end="\r")
+    labels = [node.label for node in dists]
+    max_label = max(labels, key = labels.count)
     if not return_false:
         return max_label
     else:
@@ -152,19 +131,9 @@ class KNN:
         :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
         :return: Labels for all points in X. Array of shape (n',)
         """
-        print(f"k: {self.k}")
-        res = []
-        pool = multiprocessing.Pool(4)
-
-        # res = pool.starmap(knn, zip(X, repeat(self.train_x), repeat(self.k), repeat(self.train_y), repeat(self.dist_function)))
-
-        res = pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
-
-        # for x in X:
-        #     res.append(knn(x, self.train_x, self.k, self.train_y, self.dist_function))
-
-        print()
-        return res
+        # pool = multiprocessing.Pool(2)
+        # return pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
+        return [knn(x, self.train_x, self.k, self.train_y, self.dist_function) for x in X]
 
 
 class Weight_KNN:
@@ -185,14 +154,7 @@ class Weight_KNN:
         :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
         :return: Labels for all points in X. Array of shape (n',)
         """
-        print(f"k: {self.k}")
-        res = []
-        pool = multiprocessing.Pool(4)
-        res = pool.map(partial(knn_weight, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function,
-                               inverse_modifier=self.inverse_modifier), X)
-
-        print()
-        return res
+        return [knn_weight(x, self.train_x, self.k, self.train_y, self.dist_function, self.inverse_modifier) for x in X]
 
 
 def accuracy(clf, X, Y):
@@ -222,26 +184,16 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
 
     tic = time.perf_counter()
 
-    accuracies = []
-    for i in range(m):
-        include_idx = np.arange(i * fold_size, fold_size + i * fold_size)
-        mask = np.array([(i in include_idx) for i in range(data_size)])
-        # retrieving the test data for each iteration
-        image_test_set = X[mask]
-        label_test_set = Y[mask]
+    pool = multiprocessing.Pool(m)
+    accuracies = pool.map(partial(single_validation, X=X, m=m, Y=Y, clf=clf, metric=metric), range(m))
 
-        # construct a training_set
-        image_train_set = X[~mask]
-        label_train_set = Y[~mask]
-
-        # using the training data and evaluate using given metric
-        clf.fit(image_train_set, label_train_set)
-        accuracies.append(metric(clf, image_test_set, label_test_set))
+    # for i in range(m):
+    #     accuracies.append(single_validation(i, m, clf, X, Y, metric))
 
     toc = time.perf_counter()
     print()
     print(f"Execute in {toc - tic:0.4f} seconds")
-    print(f"Compare Count: {cpr_count}")
+    # print(f"Compare Count: {cpr_count}")
 
     # calculating average accuracy
     acc = sum(accuracies) / len(accuracies)
@@ -249,24 +201,23 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     print(f"--------------------------------------")
     return acc
 
+def single_validation(i, m, clf, X, Y, metric):
+    data_size = np.size(Y)
+    fold_size = (int) (data_size / m)
+    include_idx = np.arange(i*fold_size,fold_size + i*fold_size)
+    mask = np.array([(i in include_idx) for i in range(data_size)])     ###
+    # retrieving the test data for each iteration
+    image_test_set = X[mask]
+    label_test_set = Y[mask]
 
-# def print_samples(train_x, train_y):
-#     unique_y = np.unique(train_y)
-#     label_y = unique_y[2]
-#
-#     imgsList = []
-#     for x, y in zip(train_x, train_y):
-#         if y == label_y:
-#             imgsList.append(x)
-#         if len(imgsList) == 16:
-#             break
-#
-#     imgs = np.array(imgsList)
-#     _, axs = plt.subplots(4, 4, figsize=(8, 6))
-#     axs = axs.flatten()
-#     for img, ax in zip(imgs, axs):
-#         ax.imshow(np.squeeze(img))
-#     plt.show()
+    # construct a training_set
+    image_train_set = X[~mask]
+    label_train_set = Y[~mask]
+
+    # using the training data and evaluate using given metric
+    clf.fit(image_train_set, label_train_set)
+    return metric(clf, image_test_set, label_test_set)
+
 
 def print_samples(train_x, train_y):
     unique_labels_set = np.unique(train_y)
@@ -283,43 +234,44 @@ def print_samples(train_x, train_y):
         axs = axs.flatten()
         for img, ax in zip(imgsList, axs):
             ax.imshow(np.squeeze(img))
-        #plt.title("Image samples for class ", i)
+        plt.title(f"Image samples for class {i}")
         plt.show()
 
 
-def convolution(x, filter):
-    squeeze_x = np.squeeze(x)
-    # TODO
+def convolve(x, filter):
+    x = np.squeeze(x)
+    x_h, x_w = x.shape
+    filter = np.flipud(np.fliplr(filter))
+    filter_h, filter_w = filter.shape
+    res_h = x_h - filter_h + 1
+    res_w = x_w - filter_w + 1
+    res = np.zeros((res_h, res_w))
+    for i in range(res_h):
+        for j in range(res_w):
+            res[i,j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
+    return res
 
 
 def main(args):
     # Set up data
-    data_size = 8000
+    data_size = 1000
     print(f"data size: {data_size}")
 
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
     train_x = train_x.numpy()[0:data_size]
     train_y = np.array(train_y)[0:data_size]
 
-    # test_x, test_y = get_strange_symbols_test_data(root=args.test_data)
-    # test_x = test_x.numpy()
-    # test_y = np.array(test_y)
-
-    # Load and evaluate the classifier for different k
-    knn_set = []
-    for i in range(1, 11):
-        # knn = KNN(k=i)
-        knn = Weight_KNN(k=i, inverse_modifier=100)
-        knn_set.append(knn)
-
     # Plot results
-
-    #cross_validation(knn_set[4], train_x, train_y)
+    # cross_validation(knn_set[4], train_x, train_y)
 
     # TODO: a
     print_samples(train_x, train_y)
 
     # # TODO: c
+    # knn_set = []
+    # for i in range(1, 11):
+    #     knn = KNN(k=i)
+    #     knn_set.append(knn)
     # k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     # acc = []
     # for i in range(0, 10):
@@ -329,13 +281,13 @@ def main(args):
     # plt.ylabel('accuracy')
     # plt.title('Accuracy for different k in KNN')
     # plt.show()
-    #
+    
     # # TODO: e
-    # best_k = 5 # replace when knowing the best k
-    # knn_euclid = KNN(best_k, euclidean_distance)
+    best_k = 5 # replace when knowing the best k
+    knn_euclid = KNN(best_k, euclidean_distance)
     # knn_manhat = KNN(best_k, manhattan_distance)
     # knn_minkow = KNN(best_k, minkows_distance)
-    #
+    
     # dist = ['knn_euclid','knn_manhat','knn_minkow']
     # acc = [cross_validation(knn_euclid, train_x, train_y),
     #        cross_validation(knn_manhat, train_x, train_y),
@@ -346,11 +298,11 @@ def main(args):
     # plt.title('Accuracy for different Distance Function in KNN')
     # plt.show()
 
-    # TODO: g
-    # blur_filter = []
-    # edge_filter = []
-    # blur_X = map(lambda x: convolution(x, blur_filter),train_x)
-    # edge_X = map(lambda x: convolution(x, edge_filter),train_x)
+    #TODO: g
+    # blur_filter = np.ones((3,3)) * 1/9
+    # edge_filter = np.array([[-1,0,1],[0,0,0],[1,0,-1]])
+    # blur_X = np.array([convolve(i, blur_filter) for i in train_x]) ###
+    # edge_X = np.array([convolve(i, edge_filter) for i in train_x]) ###
     # filter = ['no filter','blur','detect edge']
     # acc = [cross_validation(knn_euclid, train_x, train_y),
     #         cross_validation(knn_euclid, blur_X, train_y),
@@ -362,14 +314,14 @@ def main(args):
     # plt.show()
 
     # TODO: h
-    # knn_algo = ['normal KNN','weight KNN']
-    # acc = [cross_validation(knn_euclid, train_x, train_y),
-    #         cross_validation(Weight_KNN(), train_x, train_y)]
-    # plt.plot(knn_algo, acc)
-    # plt.xlabel('Filter')
-    # plt.ylabel('Accuracy')
-    # plt.title('Accuracy for different Algorithsm in KNN')
-    # plt.show()
+    knn_algo = ['normal KNN','weight KNN']
+    acc = [cross_validation(knn_euclid, train_x, train_y),
+            cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+    plt.plot(knn_algo, acc)
+    plt.xlabel('Filter')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Algorithsm in KNN')
+    plt.show()
 
     # TODO: i
     # best_k = 5 # replace when knowing the best k
