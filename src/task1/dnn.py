@@ -22,13 +22,36 @@ if __name__ == '__main__':
     train_x, train_y = get_strange_symbols_train_data()
 
     # hyperparameters
-    input_size = 784
+    img_size = 28
+    input_size = img_size ** 2
     output_size = 15
+    channel_size = 1
+
     learning_rate = 0.01
     batch_size = 128
     num_epoch = 4
+    loss_function = nn.CrossEntropyLoss()
 
-    # helper class
+    fc1_size = 256
+    fc2_size = 64
+
+    def calculate_output_size(input_size, kernel_size, stride, padding=0):
+        return math.floor((input_size + padding*2 - (kernel_size -1) -1)/stride) + 1
+    
+    conv1_size = 6
+    conv1_kernel = 3
+    conv1_stride = 2
+    maxpool1_size = 2
+    conv1_output_size = math.floor(calculate_output_size(img_size, conv1_kernel, conv1_stride)/maxpool1_size)
+
+    conv2_size = 16
+    conv2_kernel = 3
+    conv2_stride = 2
+    maxpool2_size = 1
+    conv2_output_size = math.floor(calculate_output_size(conv1_output_size, conv2_kernel, conv2_stride)/maxpool2_size)
+
+
+    # Neural Network Models
     class Lambda(nn.Module):
         def __init__(self, func):
             super().__init__()
@@ -37,7 +60,6 @@ if __name__ == '__main__':
         def forward(self, x):
             return self.func(x)
 
-    # Now it's up to you to define the network and use the data to train it.
     class DNN(nn.Module):
         def __init__(self, input_size, output_size):
             super(DNN, self).__init__()
@@ -45,11 +67,11 @@ if __name__ == '__main__':
             self.output_size = output_size
             self.dnn = nn.Sequential(
                 Lambda(lambda x: x.view(x.size(0), -1).float()),
-                nn.Linear(input_size, 256),
+                nn.Linear(input_size, fc1_size),
                 nn.ReLU(),
-                nn.Linear(256, 128),
+                nn.Linear(fc1_size, fc2_size),
                 nn.ReLU(),
-                nn.Linear(128, output_size)
+                nn.Linear(fc2_size, output_size)
             )
 
         def forward(self, x):
@@ -58,35 +80,31 @@ if __name__ == '__main__':
         def clone(self):
             return DNN(self.input_size, self.output_size)
 
-    def preprocess(x):
-        print(x.shape)
-        x.view(x.size(0), -1)
-        print(x.shape)
-
     class CNN(nn.Module):
-        def __init__(self, input_size, output_size):
+        def __init__(self, channel_size, img_size, output_size):
             super(CNN, self).__init__()
-            self.input_size = input_size
+            self.channel_size = channel_size
+            self.img_size = img_size
             self.output_size = output_size
 
             self.cnn = nn.Sequential(
-                Lambda(lambda x: x.view(-1, 1, 28, 28).float()),
-                nn.Conv2d(1, 6, kernel_size=3, stride=2, padding=0),
+                Lambda(lambda x: x.view(-1, channel_size, img_size, img_size).float()),
+                nn.Conv2d(channel_size, conv1_size, kernel_size=conv1_kernel, stride=conv1_stride),
                 nn.ReLU(),
-                nn.MaxPool2d(2, 2),
-                nn.Conv2d(6, 16, kernel_size=3, stride=1, padding=0),
+                nn.MaxPool2d(maxpool1_size, maxpool1_size),
+                nn.Conv2d(conv1_size, conv2_size, kernel_size=conv2_kernel, stride=conv2_stride),
                 nn.ReLU(),
-                DNN(16 * 4 * 4, output_size)
+                DNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
             )
 
         def forward(self, x):
             return self.cnn(x)
 
         def clone(self):
-            return CNN(self.input_size, self.output_size)
+            return CNN(self.channel_size, self.img_size, self.output_size)
 
 
-    def cross_validation(model, X, Y, lr, num_epochs, m=4):
+    def cross_validation(model, X, Y, lr, num_epochs, loss_func, batch_size, m=4):
 
         report_printed = False
 
@@ -105,7 +123,6 @@ if __name__ == '__main__':
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             model.to(device)
             optimizer = optim.Adam(model.parameters(), lr)
-            loss_func = nn.CrossEntropyLoss()
 
             # get the result of last epoch to produce analytics
             epoch_losses = []
@@ -202,8 +219,8 @@ if __name__ == '__main__':
             plt.show()
 
 
-    # cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
-    cross_validation(CNN(1, output_size), train_x, train_y, learning_rate, num_epoch)
+    # cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch, loss_function, batch_size)
+    cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, learning_rate, num_epoch, loss_function, batch_size)
 
     # The code above is just given as a hint, you may change or adapt it.
     # Nevertheless, you are recommended to use the above loader with some batch size of choice.
