@@ -21,50 +21,70 @@ if __name__ == '__main__':
     # executing this prepares a loader, which you can iterate to access the data
     train_x, train_y = get_strange_symbols_train_data()
 
-
-    # Now it's up to you to define the network and use the data to train it.
-    class DNN(nn.Module):
-        def __init__(self, input_layer, output_layer):
-            super(DNN, self).__init__()
-            self.input_layer = input_layer
-            self.output_layer = output_layer
-            self.fc1 = nn.Linear(input_layer, 256)
-            self.fc2 = nn.Linear(256, output_layer)
-
-        def forward(self, x):
-            x = F.relu(self.fc1(x))
-            x = self.fc2(x)
-            return x
-
-        def clone(self):
-            return DNN(self.input_layer, self.output_layer)
-
-
-    class CNN(nn.Module):
-        def __init__(self, input_layer, output_layer):
-            super(CNN, self).__init__()
-            self.input_layer = input_layer
-            self.output_layer = output_layer
-            self.conv1 = nn.Conv2d(input_layer, 64, kernel_size=3, stride=2, padding=1)
-            self.conv2 = nn.Conv2d(64, 15, kernel_size=3, stride=2, padding=1)
-
-        def forward(self, x):
-            x = x.view(-1, 1, 28, 28)
-            x = F.relu(self.conv1(x))
-            x = F.relu(self.conv2(x))
-            x = F.avg_pool2d(x, 4)
-            return x
-
-        def clone(self):
-            return CNN(self.input_layer, self.output_layer)
-
-
-    # Param-, hyperparameters
+    # hyperparameters
     input_size = 784
     output_size = 15
     learning_rate = 0.01
     batch_size = 128
     num_epoch = 4
+
+    # helper class
+    class Lambda(nn.Module):
+        def __init__(self, func):
+            super().__init__()
+            self.func = func
+
+        def forward(self, x):
+            return self.func(x)
+
+    # Now it's up to you to define the network and use the data to train it.
+    class DNN(nn.Module):
+        def __init__(self, input_size, output_size):
+            super(DNN, self).__init__()
+            self.input_size = input_size
+            self.output_size = output_size
+            self.dnn = nn.Sequential(
+                Lambda(lambda x: x.view(x.size(0), -1).float()),
+                nn.Linear(input_size, 256),
+                nn.ReLU(),
+                nn.Linear(256, 128),
+                nn.ReLU(),
+                nn.Linear(128, output_size)
+            )
+
+        def forward(self, x):
+            return self.dnn(x)
+
+        def clone(self):
+            return DNN(self.input_size, self.output_size)
+
+    def preprocess(x):
+        print(x.shape)
+        x.view(x.size(0), -1)
+        print(x.shape)
+
+    class CNN(nn.Module):
+        def __init__(self, input_size, output_size):
+            super(CNN, self).__init__()
+            self.input_size = input_size
+            self.output_size = output_size
+
+            self.cnn = nn.Sequential(
+                Lambda(lambda x: x.view(-1, 1, 28, 28).float()),
+                nn.Conv2d(1, 6, kernel_size=3, stride=2, padding=0),
+                nn.ReLU(),
+                nn.MaxPool2d(2, 2),
+                nn.Conv2d(6, 16, kernel_size=3, stride=1, padding=0),
+                nn.ReLU(),
+                DNN(16 * 4 * 4, output_size)
+            )
+
+        def forward(self, x):
+            return self.cnn(x)
+
+        def clone(self):
+            return CNN(self.input_size, self.output_size)
+
 
     def cross_validation(model, X, Y, lr, num_epochs, m=4):
 
@@ -120,7 +140,22 @@ if __name__ == '__main__':
 
                 # plot_losses_and_accs(epoch_losses, epoch_accuracies)
                 # plot_report(preds, actuals)
-                plot_confident_imgs(confs, imgs, preds, actuals)
+                # plot_confident_imgs(confs, imgs, preds, actuals)
+
+
+    def loss_batch(model, loss_func, xb, yb, opt=None):
+        scores = model(xb)
+        softmax_scores = torch.nn.functional.softmax(scores)
+        preds = torch.argmax(softmax_scores, dim=1)
+        confs,_ = torch.max(softmax_scores, dim=1)
+        loss = loss_func(scores, yb)
+
+        if opt is not None:
+            loss.backward()
+            opt.step()
+            opt.zero_grad()
+
+        return loss.item(), confs, xb, preds, yb, len(xb)
 
 
     def plot_losses_and_accs(losses, accuracies):
@@ -165,23 +200,6 @@ if __name__ == '__main__':
                 bx.set_xlabel(actual)
             axs[1,0].set_ylabel("Incorrect least Conf")
             plt.show()
-                
-
-
-    def loss_batch(model, loss_func, xb, yb, opt=None):
-        xb = xb.reshape(xb.shape[0], -1).float()  # shape 128 x 784
-        scores = model(xb)
-        softmax_scores = torch.nn.functional.softmax(scores)
-        preds = torch.argmax(softmax_scores, dim=1)
-        confs,_ = torch.max(softmax_scores, dim=1)
-        loss = loss_func(scores, yb)
-
-        if opt is not None:
-            loss.backward()
-            opt.step()
-            opt.zero_grad()
-
-        return loss.item(), confs, xb, preds, yb, len(xb)
 
 
     # cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
