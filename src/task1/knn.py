@@ -17,7 +17,6 @@ def euclidean_distance(a, b):
 
 
 def manhattan_distance(a, b):
-    
     return np.linalg.norm(np.squeeze(a - b), 1)
 
 
@@ -35,12 +34,13 @@ def minkows_distance(a, b):
 
 
 class Node(object):
-    def __init__(self, dist: float, label: int):
+    def __init__(self, dist: float, label: int, image):
         self.dist = dist
         self.label = label
+        self.image = image
 
     def __repr__(self):
-        return f'Node value: {self.dist}, Label: {self.label}'
+        return f'Node value: {self.dist}, Label: {self.label}, Image: {self.image}'
 
     def __lt__(self, other):
         global cpr_count
@@ -49,11 +49,11 @@ class Node(object):
         return self.dist > other.dist
 
 
-def knn(test, X, k, Y, dist_func, return_false=False):
+def knn(test, X, k, Y, dist_func, return_neighbor=False):
     dists = []
     # implement top k smallest distance
     for i in range(np.size(Y)):
-        node = Node(dist_func(test, X[i]), Y[i])
+        node = Node(dist_func(test, X[i]), Y[i], X[i])
         if len(dists) < k:
             heapq.heappush(dists, node)
         else:
@@ -66,27 +66,19 @@ def knn(test, X, k, Y, dist_func, return_false=False):
     # dists.sort()
 
     labels = [node.label for node in dists]
-    max_label = max(labels, key = labels.count)
-    if not return_false:
+    max_label = max(labels, key=labels.count)
+    if not return_neighbor:
         return max_label
     else:
+        # dists consists of distance, actual label of image and image
         return max_label, dists
-
-
-def get_missclassified(clf, X, Y):
-    miss_classified = []
-    pred_Y = clf.predict(X)
-    for pred_y, y in zip(pred_Y[0], Y):
-        if pred_y != y:
-            miss_classified.append((X, y, pred_y))
-    return random.sample(5)
 
 
 def knn_weight(test, X, k, Y, dist_func, inverse_modifier):
     dists = []
     # implement top k smallest distance
     for i in range(np.size(Y)):
-        node = Node(dist_func(test, X[i]), Y[i])
+        node = Node(dist_func(test, X[i]), Y[i], X[i])
         if len(dists) < k:
             heapq.heappush(dists, node)
         else:
@@ -115,10 +107,10 @@ def knn_weight(test, X, k, Y, dist_func, inverse_modifier):
 
 
 class KNN:
-    def __init__(self, k=5, dist_function=euclidean_distance, return_false=False):
+    def __init__(self, k=5, dist_function=euclidean_distance, return_neighbor=False):
         self.k = k
         self.dist_function = dist_function
-        self.return_false = return_false
+        self.return_neighbor = return_neighbor
 
     def fit(self, X, y):
         self.train_x = X
@@ -133,7 +125,7 @@ class KNN:
         """
         # pool = multiprocessing.Pool(2)
         # return pool.map(partial(knn, X=self.train_x, k=self.k, Y=self.train_y, dist_func=self.dist_function), X)
-        return [knn(x, self.train_x, self.k, self.train_y, self.dist_function) for x in X]
+        return [knn(x, self.train_x, self.k, self.train_y, self.dist_function, self.return_neighbor) for x in X]
 
 
 class Weight_KNN:
@@ -161,14 +153,27 @@ def accuracy(clf, X, Y):
     sum = 0
     pred_Y = clf.predict(X)
     for pred_y, y in zip(pred_Y, Y):
-        if (pred_y == y):
+        if pred_y == y:
             sum += 1
     D = np.size(Y)
     print(f"Accuracy: {sum}/{D}")
     return sum / D
 
 
-def cross_validation(clf, X, Y, m=5, metric=accuracy):
+def accuracy_with_misclassified(clf, X, Y):
+    sum = 0
+    miss_classified = []
+    pred_Y = clf.predict(X)
+    for pred_y, y, x in zip(pred_Y, Y, X):
+        if pred_y[0] != y:
+            miss_classified.append((x, y, pred_y[0], pred_y[1]))
+        if pred_y[0] == y: sum += 1
+    D = np.size(Y)
+    print(f"Accuracy: {sum}/{D}")
+    return sum / D, random.sample(miss_classified, 5)
+
+
+def cross_validation(clf, X, Y, m=5, metric=accuracy, get_misclassified=False):
     """
     Performs m-fold cross validation.
 
@@ -185,27 +190,36 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     tic = time.perf_counter()
 
     pool = multiprocessing.Pool(m)
+
     accuracies = pool.map(partial(single_validation, X=X, m=m, Y=Y, clf=clf, metric=metric), range(m))
 
     # for i in range(m):
     #     accuracies.append(single_validation(i, m, clf, X, Y, metric))
 
     toc = time.perf_counter()
-    print()
     print(f"Execute in {toc - tic:0.4f} seconds")
     # print(f"Compare Count: {cpr_count}")
 
     # calculating average accuracy
-    acc = sum(accuracies) / len(accuracies)
-    print(f"Acc: {acc}")
-    print(f"--------------------------------------")
-    return acc
+    if not get_misclassified:
+        acc = sum(accuracies) / m
+        print(f"Acc: {acc}")
+        return acc
+    else:
+        a = []
+        for i in accuracies:
+            a.append(i[0])
+        acc = sum(a) / m
+        print(f"Acc: {acc}")
+        miss = accuracies[0][1]
+        return acc, miss
+
 
 def single_validation(i, m, clf, X, Y, metric):
     data_size = np.size(Y)
-    fold_size = (int) (data_size / m)
-    include_idx = np.arange(i*fold_size,fold_size + i*fold_size)
-    mask = np.array([(i in include_idx) for i in range(data_size)])     ###
+    fold_size = (int)(data_size / m)
+    include_idx = np.arange(i * fold_size, fold_size + i * fold_size)
+    mask = np.array([(i in include_idx) for i in range(data_size)])  ###
     # retrieving the test data for each iteration
     image_test_set = X[mask]
     label_test_set = Y[mask]
@@ -238,6 +252,20 @@ def print_samples(train_x, train_y):
         plt.show()
 
 
+def plotMisclassified(miss):
+    fig = plt.figure()
+    for i in range(5):
+        fig.add_subplot(5, 6, i * 6 + 1)
+        plt.title(f'Actual label {miss[i][1]}\n predicted as {miss[i][2]}')
+        plt.imshow(np.squeeze(miss[i][0]))
+        for j in range(len(miss[i][3])):
+            fig.add_subplot(5, 6, i * 6 + 1 + j + 1)
+            plt.title(f'Label: {miss[i][3][j].label}')
+            plt.imshow(np.squeeze(miss[i][3][j].image))
+    plt.subplots_adjust(hspace=0.8)
+    plt.show()
+
+
 def convolve(x, filter):
     x = np.squeeze(x)
     x_h, x_w = x.shape
@@ -248,7 +276,7 @@ def convolve(x, filter):
     res = np.zeros((res_h, res_w))
     for i in range(res_h):
         for j in range(res_w):
-            res[i,j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
+            res[i, j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
     return res
 
 
@@ -264,8 +292,8 @@ def main(args):
     # Plot results
     # cross_validation(knn_set[4], train_x, train_y)
 
-    # TODO: a
-    print_samples(train_x, train_y)
+    # a
+    # print_samples(train_x, train_y)
 
     # # TODO: c
     # knn_set = []
@@ -281,13 +309,13 @@ def main(args):
     # plt.ylabel('accuracy')
     # plt.title('Accuracy for different k in KNN')
     # plt.show()
-    
+
     # # TODO: e
-    best_k = 5 # replace when knowing the best k
+    best_k = 5  # replace when knowing the best k
     knn_euclid = KNN(best_k, euclidean_distance)
     # knn_manhat = KNN(best_k, manhattan_distance)
     # knn_minkow = KNN(best_k, minkows_distance)
-    
+
     # dist = ['knn_euclid','knn_manhat','knn_minkow']
     # acc = [cross_validation(knn_euclid, train_x, train_y),
     #        cross_validation(knn_manhat, train_x, train_y),
@@ -298,7 +326,7 @@ def main(args):
     # plt.title('Accuracy for different Distance Function in KNN')
     # plt.show()
 
-    #TODO: g
+    # TODO: g
     # blur_filter = np.ones((3,3)) * 1/9
     # edge_filter = np.array([[-1,0,1],[0,0,0],[1,0,-1]])
     # blur_X = np.array([convolve(i, blur_filter) for i in train_x]) ###
@@ -313,21 +341,25 @@ def main(args):
     # plt.title('Accuracy for different Filters in KNN')
     # plt.show()
 
-    # TODO: h
-    knn_algo = ['normal KNN','weight KNN']
-    acc = [cross_validation(knn_euclid, train_x, train_y),
-            cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
-    plt.plot(knn_algo, acc)
-    plt.xlabel('Filter')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy for different Algorithsm in KNN')
-    plt.show()
+    # # TODO: h
+    # knn_algo = ['normal KNN', 'weight KNN']
+    # acc = [cross_validation(knn_euclid, train_x, train_y),
+    #        cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+    # plt.plot(knn_algo, acc)
+    # plt.xlabel('Filter')
+    # plt.ylabel('Accuracy')
+    # plt.title('Accuracy for different Algorithm in KNN')
+    # plt.show()
 
     # TODO: i
-    # best_k = 5 # replace when knowing the best k
-    # knn_euclid = KNN(best_k, euclidean_distance)
+    print("________________________________________________________________________________________")
+    best_k = 5  # replace when knowing the best k
+    knn_euclid = KNN(best_k, euclidean_distance, return_neighbor=True)
+    acc, miss = cross_validation(knn_euclid, train_x, train_y, metric=accuracy_with_misclassified,
+                                 get_misclassified=True)
     # knn_manhat = KNN(best_k, manhattan_distance)
     # knn_minkow = KNN(best_k, minkows_distance)
+    plotMisclassified(miss)
 
 
 if __name__ == '__main__':
