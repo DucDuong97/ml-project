@@ -160,17 +160,13 @@ def accuracy(clf, X, Y):
     return sum / D
 
 
-def accuracy_with_misclassified(clf, X, Y):
-    sum = 0
+def get_misclassified(clf, X, Y):
     miss_classified = []
     pred_Y = clf.predict(X)
     for pred_y, y, x in zip(pred_Y, Y, X):
         if pred_y[0] != y:
             miss_classified.append((x, y, pred_y[0], pred_y[1]))
-        if pred_y[0] == y: sum += 1
-    D = np.size(Y)
-    print(f"Accuracy: {sum}/{D}")
-    return sum / D, random.sample(miss_classified, 5)
+    return random.sample(miss_classified, 5)
 
 
 def cross_validation(clf, X, Y, m=5, metric=accuracy, get_misclassified=False):
@@ -213,6 +209,22 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy, get_misclassified=False):
         print(f"Acc: {acc}")
         miss = accuracies[0][1]
         return acc, miss
+
+def cross_misclassify(clf, X, Y, m=5, metric=get_misclassified):
+    """
+    Performs m-fold cross validation to get misclassified samples.
+
+    :param clf: The classifier which should be tested.
+    :param X: The input data. Array of shape (n, ...).
+    :param Y: Labels for X. Array of shape (n,).
+    :param m: The number of folds.
+    :param metric: Metric that should be evaluated on the test fold.
+    :return: 5 random misclassified samples
+    """
+    miss = []
+    for i in range(m):
+        miss.append(single_validation(i, m, clf, X, Y, metric))
+    return miss[0]
 
 
 def single_validation(i, m, clf, X, Y, metric):
@@ -257,6 +269,7 @@ def plotMisclassified(miss):
     for i in range(5):
         fig.add_subplot(5, 6, i * 6 + 1)
         plt.title(f'Actual label {miss[i][1]}\n predicted as {miss[i][2]}')
+
         plt.imshow(np.squeeze(miss[i][0]))
         for j in range(len(miss[i][3])):
             fig.add_subplot(5, 6, i * 6 + 1 + j + 1)
@@ -355,8 +368,7 @@ def main(args):
     print("________________________________________________________________________________________")
     best_k = 5  # replace when knowing the best k
     knn_euclid = KNN(best_k, euclidean_distance, return_neighbor=True)
-    acc, miss = cross_validation(knn_euclid, train_x, train_y, metric=accuracy_with_misclassified,
-                                 get_misclassified=True)
+    miss = cross_misclassify(knn_euclid, train_x, train_y)
     # knn_manhat = KNN(best_k, manhattan_distance)
     # knn_minkow = KNN(best_k, minkows_distance)
     plotMisclassified(miss)
