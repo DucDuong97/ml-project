@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+from scipy.spatial import distance
 import torch
 import math
 import matplotlib.pyplot as plt
@@ -11,6 +12,47 @@ from functools import partial
 
 from dataset import *
 
+# Path to which figures will be saved
+PATH = '../../report/task1/figures'
+# Width of the text area in our document. Given in inches
+TEXT_WIDTH = 5.78851
+# Multiplicators for the figure's width
+TEXT_WIDTH_MUL = 0.7
+TEXT_WIDTH_MUL_WIDE = 0.9
+# Aspect ratio of figures
+ASPECT = 3. / 4.
+
+FIG_WITDH = TEXT_WIDTH * TEXT_WIDTH_MUL
+FIG_HEIGHT = FIG_WITDH * ASPECT
+FIG_HEIGHT_FLAT = FIG_HEIGHT * 0.45
+
+# Font sizes
+SMALL_SIZE = 9
+MEDIUM_SIZE = 11
+BIGGER_SIZE = 12
+
+def setup_matplotlib():
+    # Use LaTeX to typeset all text in the figure
+    # This obviously needs a working LaTeX installation on the system
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.size': SMALL_SIZE,
+        'axes.titlesize': SMALL_SIZE,
+        'axes.labelsize': MEDIUM_SIZE,
+        'xtick.labelsize': SMALL_SIZE,
+        'ytick.labelsize': SMALL_SIZE,
+        'legend.fontsize': SMALL_SIZE,
+        'figure.titlesize': MEDIUM_SIZE,
+        'text.usetex': True,
+        'mathtext.fontset': 'cm',
+        'mathtext.rm': 'serif',
+        'text.latex.preamble': ['\\usepackage{amsmath}\n'
+                                '\\usepackage{amssymb}']
+    })
+
+#####################################################################
+
+# distance function
 
 def euclidean_distance(a, b):
     return np.linalg.norm(np.squeeze(a - b))
@@ -20,19 +62,14 @@ def manhattan_distance(a, b):
     return np.linalg.norm(np.squeeze(a - b), 1)
 
 
-def minkows_distance(a, b):
-    dist = 0.0
-    a = a.flatten()
-    b = b.flatten()
-    for i in range(len(a)):
-        dist += abs(a[i] - b[i]) ** 3
-    return dist ** (1 / 3)
-    # return np.linalg.norm(np.squeeze(a - b), 3)
+def minkowki_distance(p, q):
+    return distance.minkowski(p.flatten(), q.flatten())
 
+#####################################################################
+
+# help function
 
 # cpr_count = 0
-
-
 class Node(object):
     def __init__(self, dist: float, label: int, image):
         self.dist = dist
@@ -106,17 +143,40 @@ def knn_weight(test, X, k, Y, dist_func, inverse_modifier):
     return max_label
 
 
+def convolve(x, filter):
+    x = np.squeeze(x)
+    x_h, x_w = x.shape
+    filter = np.flipud(np.fliplr(filter))
+    filter_h, filter_w = filter.shape
+    res_h = x_h - filter_h + 1
+    res_w = x_w - filter_w + 1
+    res = np.zeros((res_h, res_w))
+    for i in range(res_h):
+        for j in range(res_w):
+            res[i, j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
+    return res
+
+
+#####################################################################
+
+# Classes
+
 class KNN:
-    def __init__(self, k=5, dist_function=euclidean_distance, return_neighbor=False):
+    def __init__(self, k=5, dist_function=euclidean_distance, filter=None, return_neighbor=False):
         self.k = k
         self.dist_function = dist_function
         self.return_neighbor = return_neighbor
+        self.filter = filter
 
     def fit(self, X, y):
+        if self.filter is not None:
+            X = np.array([convolve(i, self.filter) for i in X]) 
         self.train_x = X
         self.train_y = y
 
     def predict(self, X):
+        if self.filter is not None:
+            X = np.array([convolve(i, self.filter) for i in X]) 
         """
         Predict labels for new, unseen data.
 
@@ -148,6 +208,9 @@ class Weight_KNN:
         """
         return [knn_weight(x, self.train_x, self.k, self.train_y, self.dist_function, self.inverse_modifier) for x in X]
 
+#####################################################################
+
+# Metric function
 
 def accuracy(clf, X, Y):
     sum = 0
@@ -173,6 +236,10 @@ def get_misclassified(clf, X, Y):
     return miss_classified
 
 
+#####################################################################
+
+# K-fold Cross Validation
+
 def cross_validation(clf, X, Y, m=5, metric=accuracy):
     """
     Performs m-fold cross validation.
@@ -186,6 +253,9 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     """
 
     tic = time.perf_counter()
+    print()
+    print(f"{m}-fold validation")
+    print(f"k: {clf.k}")
 
     pool = multiprocessing.Pool(m)
     accuracies = pool.map(partial(single_validation, X=X, m=m, Y=Y, clf=clf, metric=metric), range(m))
@@ -201,20 +271,8 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     # calculating average accuracy
     acc = sum(accuracies) / m
     print(f"Acc: {acc}")
+    print('--------------------------')
     return acc
-
-def cross_misclassify(clf, X, Y, m=5, metric=get_misclassified):
-    """
-    Performs m-fold cross validation to get misclassified samples.
-
-    :param clf: The classifier which should be tested.
-    :param X: The input data. Array of shape (n, ...).
-    :param Y: Labels for X. Array of shape (n,).
-    :param m: The number of folds.
-    :param metric: Metric that should be evaluated on the test fold.
-    :return: 5 random misclassified samples
-    """
-    return single_validation(0, m, clf, X, Y, metric)
 
 
 def single_validation(i, m, clf, X, Y, metric):
@@ -235,57 +293,55 @@ def single_validation(i, m, clf, X, Y, metric):
     return metric(clf, image_test_set, label_test_set)
 
 
-def print_samples(train_x, train_y):
-    unique_labels_set = np.unique(train_y)
+#####################################################################
+
+# Plot function
+
+def plot_samples(sample_x, sample_y, amount):
+    unique_labels_set = np.unique(sample_y)
 
     samples = {}
     # Retrieving 4 images for each class
     for i in unique_labels_set:
-        samples[i] = np.concatenate(np.where(train_y == i), axis=0)[:4]
+        samples[i] = np.concatenate(np.where(sample_y == i), axis=0)[:amount]
     for i in samples:
         imgsList = []
         for j in samples[i]:
-            imgsList.append(train_x[j])
-        fig, axs = plt.subplots(2, 2, figsize=(8, 6))
-        fig.suptitle(f"class {i}")
-        axs = axs.flatten()
+            imgsList.append(sample_x[j])
+        fig, axs = plt.subplots(1, amount, figsize=(FIG_WITDH, FIG_HEIGHT_FLAT))
+        fig.suptitle(f"Class {i}")
         for img, ax in zip(imgsList, axs):
             ax.imshow(np.squeeze(img))
-        plt.title(f"Image samples for class {i}")
-        plt.show()
+        plt.savefig(os.path.join(PATH, f'1a_sample_class_{i}.pdf'))
+        plt.close(fig)
 
 
 def plotMissclassified(miss):
-    width = TEXT_WIDTH * TEXT_WIDTH_MUL
-    fig = plt.figure(figsize=(width, width*ASPECT))
-    for i in range(5):
-        fig.add_subplot(5, 6, i * 6 + 1)
-        plt.title(f'Actual label {miss[i][1]}\n predicted as {miss[i][2]}')
+    amount = len(miss)
+    if amount ==0: return
+    for i in range(amount):
+        img, actual, pred, neighbors = miss[i]
+        neigh_num = len(neighbors)
+        fig, axs = plt.subplots(1, neigh_num + 1, figsize=(FIG_WITDH, FIG_HEIGHT_FLAT))
+        axs[0].set_title(f'Actual: {actual}\n predicted: {pred}')
+        axs[0].imshow(np.squeeze(img))
 
-        plt.imshow(np.squeeze(miss[i][0]))
-        for j in range(len(miss[i][3])):
-            fig.add_subplot(5, 6, i * 6 + 1 + j + 1)
-            plt.title(f'Label: {miss[i][3][j].label}')
-            plt.imshow(np.squeeze(miss[i][3][j].image))
-    plt.subplots_adjust(hspace=0.8)
-    plt.show()
+        for j in range(neigh_num):
+            axs[j+1].set_title(f'Lbl: {neighbors[j].label}')
+            axs[j+1].imshow(np.squeeze(neighbors[j].image))
+        
+        plt.savefig(os.path.join(PATH, f'1i_miss_classified_{i}.pdf'))
+        plt.close(fig)
 
 
-def convolve(x, filter):
-    x = np.squeeze(x)
-    x_h, x_w = x.shape
-    filter = np.flipud(np.fliplr(filter))
-    filter_h, filter_w = filter.shape
-    res_h = x_h - filter_h + 1
-    res_w = x_w - filter_w + 1
-    res = np.zeros((res_h, res_w))
-    for i in range(res_h):
-        for j in range(res_w):
-            res[i, j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
-    return res
+#####################################################################
 
+# Mainnnnn
 
 def main(args):
+    # Set up plot
+    setup_matplotlib()
+
     # Set up data
     data_size = 1000
     print(f"data size: {data_size}")
@@ -297,73 +353,97 @@ def main(args):
     # Plot results
     # cross_validation(knn_set[4], train_x, train_y)
 
+
+
     # a
-    # print_samples(train_x, train_y)
+    amount = 4
+    sample_x = train_x[:1000]
+    sample_y = train_y[:1000]
+    # plot_samples(sample_x, sample_y, amount)
+
+
 
     # # TODO: c
-    # knn_set = []
-    # for i in range(1, 11):
-    #     knn = KNN(k=i)
-    #     knn_set.append(knn)
-    # k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    # acc = []
-    # for i in range(0, 10):
-    #     acc.append(cross_validation(knn_set[i], train_x, train_y))
+    # k = range(1,11)
+    # acc = [cross_validation(KNN(i+1), train_x, train_y) for i in range(10)]
+
+    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
     # plt.plot(k, acc)
     # plt.xlabel('k')
     # plt.ylabel('accuracy')
     # plt.title('Accuracy for different k in KNN')
-    # plt.show()
+    # plt.savefig(os.path.join(PATH, f'1c_knn_acc_k.pdf'))
+    # plt.close(fig)
+
+
 
     # # TODO: e
     best_k = 5  # replace when knowing the best k
-    knn_euclid = KNN(best_k, euclidean_distance)
+    # knn_euclid = KNN(best_k, euclidean_distance)
     # knn_manhat = KNN(best_k, manhattan_distance)
-    # knn_minkow = KNN(best_k, minkows_distance)
+    # knn_kl = KNN(best_k, minkowki_distance)
 
-    # dist = ['knn_euclid','knn_manhat','knn_minkow']
+    # dist = ['Euclid','Manhattan','Minkowski']
     # acc = [cross_validation(knn_euclid, train_x, train_y),
     #        cross_validation(knn_manhat, train_x, train_y),
-    #        cross_validation(knn_minkow, train_x, train_y)]
+    #        cross_validation(knn_kl, train_x, train_y)]
+
+    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
     # plt.plot(dist, acc)
     # plt.xlabel('Distance Function')
     # plt.ylabel('Accuracy')
     # plt.title('Accuracy for different Distance Function in KNN')
-    # plt.show()
+    # plt.savefig(os.path.join(PATH, f'1e_knn_acc_dist.pdf'))
+    # plt.close(fig)
+
+
 
     # TODO: g
     # blur_filter = np.ones((3,3)) * 1/9
     # edge_filter = np.array([[-1,0,1],[0,0,0],[1,0,-1]])
-    # blur_X = np.array([convolve(i, blur_filter) for i in train_x]) ###
-    # edge_X = np.array([convolve(i, edge_filter) for i in train_x]) ###
+    # knn_non_filter = KNN()
+    # knn_blur_filter = KNN(filter=blur_filter)
+    # knn_edge_filter = KNN(filter=edge_filter)
+
     # filter = ['no filter','blur','detect edge']
-    # acc = [cross_validation(knn_euclid, train_x, train_y),
-    #         cross_validation(knn_euclid, blur_X, train_y),
-    #         cross_validation(knn_euclid, edge_X, train_y)]
+    # acc = [cross_validation(knn_non_filter, train_x, train_y),
+    #         cross_validation(knn_blur_filter, train_x, train_y),
+    #         cross_validation(knn_edge_filter, train_x, train_y)]
+
+    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
     # plt.plot(filter, acc)
     # plt.xlabel('Filter')
     # plt.ylabel('Accuracy')
     # plt.title('Accuracy for different Filters in KNN')
-    # plt.show()
+    # plt.savefig(os.path.join(PATH, f'1g_knn_acc_filter.pdf'))
+    # plt.close(fig)
+
+
 
     # # TODO: h
-    # knn_algo = ['normal KNN', 'weight KNN']
-    # acc = [cross_validation(knn_euclid, train_x, train_y),
-    #        cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
-    # plt.plot(knn_algo, acc)
-    # plt.xlabel('Filter')
-    # plt.ylabel('Accuracy')
-    # plt.title('Accuracy for different Algorithm in KNN')
-    # plt.show()
+    knn_algo = ['normal KNN', 'weight KNN']
+    acc = [cross_validation(KNN(), train_x, train_y),
+           cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(knn_algo, acc)
+    plt.xlabel('Algorithm')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Algorithm in KNN')
+    plt.savefig(os.path.join(PATH, f'1h_knn_acc_algo.pdf'))
+    plt.close(fig)
+
+
 
     # TODO: i
     print("________________________________________________________________________________________")
-    best_k = 5  # replace when knowing the best k
-    knn_euclid = KNN(best_k, euclidean_distance, return_neighbor=True)
-    miss = cross_misclassify(knn_euclid, train_x, train_y)
+    miss_classified_k = 4  # Best for printing
+    knn_euclid = KNN(miss_classified_k, euclidean_distance, return_neighbor=True)
+    miss = single_validation(0, 4, knn_euclid, train_x, train_y, get_misclassified)
     # knn_manhat = KNN(best_k, manhattan_distance)
     # knn_minkow = KNN(best_k, minkows_distance)
-    plotMissclassified(miss)
+    # plotMissclassified(miss)
+
 
 
 if __name__ == '__main__':
