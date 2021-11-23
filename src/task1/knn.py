@@ -11,44 +11,7 @@ import multiprocessing
 from functools import partial
 
 from dataset import *
-
-# Path to which figures will be saved
-PATH = '../../report/task1/figures'
-# Width of the text area in our document. Given in inches
-TEXT_WIDTH = 5.78851
-# Multiplicators for the figure's width
-TEXT_WIDTH_MUL = 0.7
-TEXT_WIDTH_MUL_WIDE = 0.9
-# Aspect ratio of figures
-ASPECT = 3. / 4.
-
-FIG_WITDH = TEXT_WIDTH * TEXT_WIDTH_MUL
-FIG_HEIGHT = FIG_WITDH * ASPECT
-FIG_HEIGHT_FLAT = FIG_HEIGHT * 0.45
-
-# Font sizes
-SMALL_SIZE = 9
-MEDIUM_SIZE = 11
-BIGGER_SIZE = 12
-
-def setup_matplotlib():
-    # Use LaTeX to typeset all text in the figure
-    # This obviously needs a working LaTeX installation on the system
-    plt.rcParams.update({
-        'font.family': 'serif',
-        'font.size': SMALL_SIZE,
-        'axes.titlesize': SMALL_SIZE,
-        'axes.labelsize': MEDIUM_SIZE,
-        'xtick.labelsize': SMALL_SIZE,
-        'ytick.labelsize': SMALL_SIZE,
-        'legend.fontsize': SMALL_SIZE,
-        'figure.titlesize': MEDIUM_SIZE,
-        'text.usetex': True,
-        'mathtext.fontset': 'cm',
-        'mathtext.rm': 'serif',
-        'text.latex.preamble': ['\\usepackage{amsmath}\n'
-                                '\\usepackage{amssymb}']
-    })
+from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
 #####################################################################
 
@@ -240,7 +203,7 @@ def get_misclassified(clf, X, Y):
 
 # K-fold Cross Validation
 
-def cross_validation(clf, X, Y, m=5, metric=accuracy):
+def knn_cross_validation(clf, X, Y, m=5, metric=accuracy):
     """
     Performs m-fold cross validation.
 
@@ -422,8 +385,8 @@ def main(args):
 
     # # TODO: h
     knn_algo = ['normal KNN', 'weight KNN']
-    acc = [cross_validation(KNN(), train_x, train_y),
-           cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+    acc = [knn_cross_validation(KNN(), train_x, train_y),
+           knn_cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
 
     fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
     plt.plot(knn_algo, acc)

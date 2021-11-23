@@ -15,11 +15,16 @@ import seaborn as sn
 import matplotlib.pyplot as plt
 
 from dataset import get_strange_symbols_train_loader, get_strange_symbols_train_data
+from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
+from knn import knn_cross_validation, KNN
 
 if __name__ == '__main__':
 
     # executing this prepares a loader, which you can iterate to access the data
     train_x, train_y = get_strange_symbols_train_data()
+    dataloader = get_strange_symbols_train_loader(128)
+
+###########################################################
 
     # hyperparameters
     img_size = 28
@@ -50,6 +55,7 @@ if __name__ == '__main__':
     maxpool2_size = 1
     conv2_output_size = math.floor(calculate_output_size(conv1_output_size, conv2_kernel, conv2_stride)/maxpool2_size)
 
+###########################################################
 
     # Neural Network Models
     class Lambda(nn.Module):
@@ -103,8 +109,11 @@ if __name__ == '__main__':
         def clone(self):
             return CNN(self.channel_size, self.img_size, self.output_size)
 
+###########################################################
 
-    def cross_validation(model, X, Y, lr, num_epochs, loss_func, batch_size, m=4):
+    # Cross Validation
+
+    def dnn_cross_validation(model, X, Y, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, batch_size=batch_size, m=4):
 
         report_printed = False
 
@@ -125,12 +134,8 @@ if __name__ == '__main__':
             optimizer = optim.Adam(model.parameters(), lr)
 
             # get the result of last epoch to produce analytics
-            epoch_losses = []
-            epoch_accuracies = []
-            confs = []
-            imgs = []
-            preds = []
-            actuals = []
+            epoch_losses = epoch_accuracies = []
+            confs = imgs = preds = actuals = []
             nums = None
             for epoch in range(num_epochs):
                 model.train()
@@ -148,7 +153,7 @@ if __name__ == '__main__':
 
             print("------------------------------")
             # we will plot the result only on the last fold
-            if not report_printed and fold == m-1:
+            if not report_printed:
                 report_printed = not report_printed
                 confs = torch.cat(confs).numpy()
                 imgs = torch.cat(imgs).numpy()
@@ -158,6 +163,9 @@ if __name__ == '__main__':
                 # plot_losses_and_accs(epoch_losses, epoch_accuracies)
                 # plot_report(preds, actuals)
                 # plot_confident_imgs(confs, imgs, preds, actuals)
+            
+            # Run only 1 fold
+            break
 
 
     def loss_batch(model, loss_func, xb, yb, opt=None):
@@ -174,6 +182,42 @@ if __name__ == '__main__':
 
         return loss.item(), confs, xb, preds, yb, len(xb)
 
+
+    def run_with_knn(model, dataloader=dataloader, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, m=4):
+        print()
+        model = model.clone()
+
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        model.to(device)
+        optimizer = optim.Adam(model.parameters(), lr)
+
+        for epoch in range(num_epochs):
+            model.train()
+            for xb, yb in dataloader:
+                scores = model(xb)
+                loss = loss_func(scores, yb)
+                loss.backward()
+                optimizer.step()
+                optimizer.zero_grad()
+        
+        scores_total = []
+        labels_total = []
+        for xb, yb in dataloader:    
+            model.eval()
+            with torch.no_grad():
+                scores = model(xb)
+                softmax_scores = torch.nn.functional.softmax(scores)
+            scores_total.append(softmax_scores)
+            labels_total.append(yb)
+        
+        scores_total = torch.cat(scores_total).numpy()
+        labels_total = torch.cat(labels_total).numpy()
+        knn_cross_validation(KNN(), scores_total, labels_total, m=m)
+                
+
+###########################################################
+
+    # plot result
 
     def plot_losses_and_accs(losses, accuracies):
         _, axs = plt.subplots(2, figsize=(8, 6), sharex=True)
@@ -218,9 +262,11 @@ if __name__ == '__main__':
             axs[1,0].set_ylabel("Incorrect least Conf")
             plt.show()
 
+###########################################################
 
     # cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch, loss_function, batch_size)
-    cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, learning_rate, num_epoch, loss_function, batch_size)
+    dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y)
+    # run_with_knn(CNN(channel_size, img_size, output_size))
 
     # The code above is just given as a hint, you may change or adapt it.
     # Nevertheless, you are recommended to use the above loader with some batch size of choice.
@@ -230,5 +276,3 @@ if __name__ == '__main__':
     # TODO
     # Use the network to get predictions (should be of shape 1500 x 15) and export it to csv using e.g. np.savetxt().
 
-    # If you encounter problems during this task, please do not hesitate to ask for help!
-    # Please check beforehand if you have installed all necessary packages found in requirements.txt
