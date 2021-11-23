@@ -230,7 +230,8 @@ def print_samples(train_x, train_y):
         imgsList = []
         for j in samples[i]:
             imgsList.append(train_x[j])
-        _, axs = plt.subplots(2, 2, figsize=(8, 6))
+        fig, axs = plt.subplots(2, 2, figsize=(8, 6))
+        fig.suptitle(f"class {i}")
         axs = axs.flatten()
         for img, ax in zip(imgsList, axs):
             ax.imshow(np.squeeze(img))
@@ -314,14 +315,14 @@ def main(args):
     # plt.show()
 
     # TODO: h
-    knn_algo = ['normal KNN','weight KNN']
-    acc = [cross_validation(knn_euclid, train_x, train_y),
-            cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
-    plt.plot(knn_algo, acc)
-    plt.xlabel('Filter')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy for different Algorithsm in KNN')
-    plt.show()
+    # knn_algo = ['normal KNN','weight KNN']
+    # acc = [cross_validation(knn_euclid, train_x, train_y),
+    #         cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+    # plt.plot(knn_algo, acc)
+    # plt.xlabel('Filter')
+    # plt.ylabel('Accuracy')
+    # plt.title('Accuracy for different Algorithsm in KNN')
+    # plt.show()
 
     # TODO: i
     # best_k = 5 # replace when knowing the best k
