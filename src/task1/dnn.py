@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     learning_rate = 0.01
     batch_size = 128
-    num_epoch = 4
+    num_epoch = 10
     loss_function = nn.CrossEntropyLoss()
 
     fc1_size = 256
@@ -66,9 +66,39 @@ if __name__ == '__main__':
         def forward(self, x):
             return self.func(x)
 
-    class DNN(nn.Module):
+
+    class BatchNorm(nn.Module):
+        def __init__(self, C, momentum=0.9):
+            super().__init__()
+            self.C = C
+            self.momentum=momentum
+            self.running_mean = torch.zeros(C)
+            self.running_var = torch.ones(C)
+            self.weight = nn.Parameter(torch.randn(C)/math.sqrt(C))
+            self.bias = nn.Parameter(torch.zeros(C))
+
+        def forward(self, X):
+            if self.training:
+                mean = X.mean([0,2,3])
+                var = X.var([0,2,3])
+                self.running_mean = self.running_mean*self.momentum + mean*(1-self.momentum)
+                self.running_var = self.running_var*self.momentum + var*(1-self.momentum)
+                print(self.running_mean)
+            else:
+                mean = self.running_mean
+                var = self.running_var
+
+            m = mean.view([1, self.C, 1, 1]).expand_as(X)
+            v = var.view([1, self.C, 1, 1]).expand_as(X)
+            w = self.weight.view([1, self.C, 1, 1]).expand_as(X)
+            b = self.bias.view([1, self.C, 1, 1]).expand_as(X)
+            out = w * (X - m)/torch.sqrt(v) + b
+            return out
+
+
+    class LNN(nn.Module):
         def __init__(self, input_size, output_size):
-            super(DNN, self).__init__()
+            super(LNN, self).__init__()
             self.input_size = input_size
             self.output_size = output_size
             self.dnn = nn.Sequential(
@@ -84,7 +114,7 @@ if __name__ == '__main__':
             return self.dnn(x)
 
         def clone(self):
-            return DNN(self.input_size, self.output_size)
+            return LNN(self.input_size, self.output_size)
 
     class CNN(nn.Module):
         def __init__(self, channel_size, img_size, output_size):
@@ -95,12 +125,14 @@ if __name__ == '__main__':
 
             self.cnn = nn.Sequential(
                 Lambda(lambda x: x.view(-1, channel_size, img_size, img_size).float()),
+                BatchNorm(channel_size),
                 nn.Conv2d(channel_size, conv1_size, kernel_size=conv1_kernel, stride=conv1_stride),
                 nn.ReLU(),
+                BatchNorm(conv1_size),
                 nn.MaxPool2d(maxpool1_size, maxpool1_size),
                 nn.Conv2d(conv1_size, conv2_size, kernel_size=conv2_kernel, stride=conv2_stride),
                 nn.ReLU(),
-                DNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
+                LNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
             )
 
         def forward(self, x):
@@ -184,7 +216,6 @@ if __name__ == '__main__':
 
 
     def run_with_knn(model, dataloader=dataloader, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, m=4):
-        print()
         model = model.clone()
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
