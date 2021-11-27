@@ -1,4 +1,6 @@
 # imports a getter for the StrangeSymbol Dataset loader and the test data tensor
+import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -83,7 +85,6 @@ if __name__ == '__main__':
                 var = X.var([0,2,3])
                 self.running_mean = self.running_mean*self.momentum + mean*(1-self.momentum)
                 self.running_var = self.running_var*self.momentum + var*(1-self.momentum)
-                print(self.running_mean)
             else:
                 mean = self.running_mean
                 var = self.running_var
@@ -116,7 +117,32 @@ if __name__ == '__main__':
         def clone(self):
             return LNN(self.input_size, self.output_size)
 
+
     class CNN(nn.Module):
+        def __init__(self, channel_size, img_size, output_size):
+            super(CNN, self).__init__()
+            self.channel_size = channel_size
+            self.img_size = img_size
+            self.output_size = output_size
+
+            self.cnn = nn.Sequential(
+                Lambda(lambda x: x.view(-1, channel_size, img_size, img_size).float()),
+                nn.Conv2d(channel_size, conv1_size, kernel_size=conv1_kernel, stride=conv1_stride),
+                nn.ReLU(),
+                nn.MaxPool2d(maxpool1_size, maxpool1_size),
+                nn.Conv2d(conv1_size, conv2_size, kernel_size=conv2_kernel, stride=conv2_stride),
+                nn.ReLU(),
+                LNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
+            )
+
+        def forward(self, x):
+            return self.cnn(x)
+
+        def clone(self):
+            return CNN(self.channel_size, self.img_size, self.output_size)
+
+
+    class CNN_BatchNorm(nn.Module):
         def __init__(self, channel_size, img_size, output_size):
             super(CNN, self).__init__()
             self.channel_size = channel_size
@@ -141,13 +167,16 @@ if __name__ == '__main__':
         def clone(self):
             return CNN(self.channel_size, self.img_size, self.output_size)
 
+
 ###########################################################
 
     # Cross Validation
 
-    def dnn_cross_validation(model, X, Y, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, batch_size=batch_size, m=4):
+    def dnn_cross_validation(model, X, Y, plot_cfm=False, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, batch_size=batch_size, m=4):
 
         report_printed = False
+        epoch_losses = []
+        epoch_accuracies = []
 
         for fold, (train_idx,val_idx) in enumerate(KFold(n_splits=m,shuffle=True).split(X, Y)):
             print()
@@ -166,8 +195,10 @@ if __name__ == '__main__':
             optimizer = optim.Adam(model.parameters(), lr)
 
             # get the result of last epoch to produce analytics
-            epoch_losses = epoch_accuracies = []
-            confs = imgs = preds = actuals = []
+            confs = []
+            imgs = []
+            preds = []
+            actuals = []
             nums = None
             for epoch in range(num_epochs):
                 model.train()
@@ -179,8 +210,9 @@ if __name__ == '__main__':
                     losses, confs, imgs, preds, actuals, nums = zip(*[loss_batch(model, loss_func, xb, yb) for xb, yb in test_loader])
                 valid_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
                 acc = (torch.cat(preds) == torch.cat(actuals)).float().mean()
-                epoch_accuracies.append(acc)
+                epoch_accuracies.append(acc.item())
                 epoch_losses.append(valid_loss)
+                
                 print(f"Epoch {epoch} - Loss: {round(valid_loss, 2)}, Acc: {round(acc.item(), 2)}")
 
             print("------------------------------")
@@ -192,12 +224,13 @@ if __name__ == '__main__':
                 preds = torch.cat(preds).numpy()
                 actuals = torch.cat(actuals).numpy()
 
-                # plot_losses_and_accs(epoch_losses, epoch_accuracies)
-                # plot_report(preds, actuals)
-                # plot_confident_imgs(confs, imgs, preds, actuals)
+                if plot_cfm:
+                    plot_confusion_matrix(preds, actuals)
+                    plot_confident_imgs(confs, imgs, preds, actuals)
             
             # Run only 1 fold
             break
+        return epoch_losses, epoch_accuracies
 
 
     def loss_batch(model, loss_func, xb, yb, opt=None):
@@ -205,7 +238,8 @@ if __name__ == '__main__':
         softmax_scores = torch.nn.functional.softmax(scores)
         preds = torch.argmax(softmax_scores, dim=1)
         confs,_ = torch.max(softmax_scores, dim=1)
-        loss = loss_func(scores, yb)
+        m = nn.LogSoftmax(dim=1)
+        loss = loss_func(m(scores), yb)
 
         if opt is not None:
             loss.backward()
@@ -236,9 +270,7 @@ if __name__ == '__main__':
         for xb, yb in dataloader:    
             model.eval()
             with torch.no_grad():
-                scores = model(xb)
-                softmax_scores = torch.nn.functional.softmax(scores)
-            scores_total.append(softmax_scores)
+                scores_total.append(model(xb))
             labels_total.append(yb)
         
         scores_total = torch.cat(scores_total).numpy()
@@ -250,23 +282,36 @@ if __name__ == '__main__':
 
     # plot result
 
-    def plot_losses_and_accs(losses, accuracies):
-        _, axs = plt.subplots(2, figsize=(8, 6), sharex=True)
-        axs[0].plot(range(len(losses)), losses)
+    def plot_losses_and_accs(labels, losses, accuracies):
+
+        fig, axs = plt.subplots(2, figsize=(FIG_WITDH, FIG_HEIGHT))
+        num = len(labels)
+        epochs_num = len(losses[0])
+        
+        for i in range(num):
+            axs[0].plot(range(epochs_num), losses[i], label=labels[i])
+            axs[1].plot(range(epochs_num), accuracies[i], label=labels[i])
+        
         plt.setp(axs[0], ylabel='loss')
         axs[0].set_title('Loss pre Epoch')
-        axs[1].plot(range(len(accuracies)), accuracies)
         plt.setp(axs[1], ylabel='accuracy')
-        plt.setp(axs[1], xlabel='epoch')
         axs[1].set_title('Accuracy pre Epoch')
-        plt.show()
-    
-    def plot_report(labels, preds):
-        plt.figure(figsize=(8,6))
+        plt.setp(axs[1], xlabel='epoch')
+        axs[0].legend()
+        axs[1].legend()
+
+        plt.savefig(os.path.join(PATH, f'2c_dnn_loss_epoch.pdf'))
+        plt.close(fig)
+
+
+    def plot_confusion_matrix(labels, preds):
+        plt.figure(figsize=(FIG_WITDH,FIG_HEIGHT))
         cm = confusion_matrix(labels, preds)
         df_cm = DataFrame(cm)
         sn.heatmap(df_cm, cmap='Oranges', annot=True, fmt='d')
-        plt.show()
+        plt.savefig(os.path.join(PATH, f'2d_confusion_matrix.pdf'))
+        # plt.close(fig)
+
 
     def plot_confident_imgs(confs, imgs, preds, actuals):
         classes = np.unique(actuals)
@@ -279,25 +324,38 @@ if __name__ == '__main__':
             class_incorrect = list(filter(lambda x: x[2] != x[3],class_member))
             incorrect_least_10_confident = sorted(class_incorrect, key=lambda x: x[0], reverse=False)[:10]
 
-            fig, axs = plt.subplots(2,10, figsize=(12, 6), sharey=True)
-            fig.suptitle(f"Class {clazz}")
-            for (conf,img,_,_), ax in zip(correct_most_10_confident, axs[0]):
+            fig, axs = plt.subplots(2,5, figsize=(FIG_WITDH, FIG_HEIGHT))
+            fig.suptitle(f"Correct, most confident images, Class {clazz}")
+            for (conf,img,_,_), ax in zip(correct_most_10_confident, axs.flatten()):
                 ax.imshow(img.reshape((28,28)))
                 ax.set_title(round(conf,2))
-            axs[0,0].set_ylabel("Correct most Conf")
+            plt.savefig(os.path.join(PATH, f'2d_confident_imgs_class_{clazz}.pdf'))
+            plt.close(fig)
 
+            fig, axs = plt.subplots(2,5, figsize=(FIG_WITDH, FIG_HEIGHT))
+            fig.suptitle(f"Incorrect, most unconfident images, Class {clazz}")
             for (conf,img,_,actual), bx in zip(incorrect_least_10_confident, axs[1]):
                 bx.imshow(img.reshape((28,28)))
                 bx.set_title(round(conf,2))
                 bx.set_xlabel(actual)
-            axs[1,0].set_ylabel("Incorrect least Conf")
-            plt.show()
+            plt.savefig(os.path.join(PATH, f'2d_unconfident_imgs_class_{clazz}.pdf'))
+            plt.close(fig)
 
 ###########################################################
 
-    # cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch, loss_function, batch_size)
-    dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y)
+    # TODO: c, show progress of designing architecture
+    # labels = ['CrossEntropyLoss', 'NLLLoss']
+    # losses, accies = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.CrossEntropyLoss()),
+    #             dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.NLLLoss())])
+    # plot_losses_and_accs(labels,losses, accies)
+
+    # TODO: d
+    # dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, plot_cfm=True)
+    
+    # TODO: e
     # run_with_knn(CNN(channel_size, img_size, output_size))
+
+    # TODO: f 
 
     # The code above is just given as a hint, you may change or adapt it.
     # Nevertheless, you are recommended to use the above loader with some batch size of choice.
