@@ -16,11 +16,12 @@ from pandas import DataFrame
 import seaborn as sn
 import matplotlib.pyplot as plt
 
-from dataset import get_strange_symbols_train_loader, get_strange_symbols_train_data
+from dataset import get_strange_symbols_train_loader, get_strange_symbols_train_data, get_strange_symbols_test_data
 from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
-from knn import knn_cross_validation, KNN
+from knn import cross_validation, KNN
 
 if __name__ == '__main__':
+    setup_matplotlib()
 
     # executing this prepares a loader, which you can iterate to access the data
     train_x, train_y = get_strange_symbols_train_data()
@@ -34,20 +35,20 @@ if __name__ == '__main__':
     output_size = 15
     channel_size = 1
 
-    learning_rate = 0.01
+    learning_rate = 0.001
     batch_size = 128
     num_epoch = 10
     loss_function = nn.CrossEntropyLoss()
 
-    fc1_size = 256
-    fc2_size = 64
+    fc1_size = 512
+    fc2_size = 256
 
     def calculate_output_size(input_size, kernel_size, stride, padding=0):
         return math.floor((input_size + padding*2 - (kernel_size -1) -1)/stride) + 1
     
     conv1_size = 6
     conv1_kernel = 3
-    conv1_stride = 2
+    conv1_stride = 1
     maxpool1_size = 2
     conv1_output_size = math.floor(calculate_output_size(img_size, conv1_kernel, conv1_stride)/maxpool1_size)
 
@@ -56,6 +57,12 @@ if __name__ == '__main__':
     conv2_stride = 2
     maxpool2_size = 1
     conv2_output_size = math.floor(calculate_output_size(conv1_output_size, conv2_kernel, conv2_stride)/maxpool2_size)
+
+    conv3_size = 16
+    conv3_kernel = 3
+    conv3_stride = 2
+    maxpool3_size = 1
+    conv3_output_size = math.floor(calculate_output_size(conv2_output_size, conv3_kernel, conv3_stride)/maxpool3_size)
 
 ###########################################################
 
@@ -131,8 +138,9 @@ if __name__ == '__main__':
                 nn.ReLU(),
                 nn.MaxPool2d(maxpool1_size, maxpool1_size),
                 nn.Conv2d(conv1_size, conv2_size, kernel_size=conv2_kernel, stride=conv2_stride),
+                nn.Conv2d(conv2_size, conv3_size, kernel_size=conv3_kernel, stride=conv3_stride),
                 nn.ReLU(),
-                LNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
+                LNN(conv3_size * conv3_output_size * conv3_output_size, output_size)
             )
 
         def forward(self, x):
@@ -172,14 +180,17 @@ if __name__ == '__main__':
 
     # Cross Validation
 
-    def dnn_cross_validation(model, X, Y, plot_cfm=False, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, batch_size=batch_size, m=4):
+    def dnn_cross_validation(model, X=train_x, Y=train_y, plot_cfm=False, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, batch_size=batch_size, m=4):
 
         report_printed = False
         epoch_losses = []
         epoch_accuracies = []
+        fold_accuracies = []
 
         for fold, (train_idx,val_idx) in enumerate(KFold(n_splits=m,shuffle=True).split(X, Y)):
             print()
+            epoch_losses = []
+            epoch_accuracies = []
 
             model = model.clone()
             print('Fold {}'.format(fold + 1))
@@ -214,6 +225,8 @@ if __name__ == '__main__':
                 epoch_losses.append(valid_loss)
                 
                 print(f"Epoch {epoch} - Loss: {round(valid_loss, 2)}, Acc: {round(acc.item(), 2)}")
+            
+            fold_accuracies.append(epoch_accuracies[-1])
 
             print("------------------------------")
             # we will plot the result only on the last fold
@@ -230,16 +243,15 @@ if __name__ == '__main__':
             
             # Run only 1 fold
             break
-        return epoch_losses, epoch_accuracies
+        return epoch_losses, epoch_accuracies, sum(fold_accuracies)/m
 
 
     def loss_batch(model, loss_func, xb, yb, opt=None):
         scores = model(xb)
-        softmax_scores = torch.nn.functional.softmax(scores)
-        preds = torch.argmax(softmax_scores, dim=1)
-        confs,_ = torch.max(softmax_scores, dim=1)
         m = nn.LogSoftmax(dim=1)
-        loss = loss_func(m(scores), yb)
+        softmax_scores = m(scores)
+        confs,preds = torch.max(softmax_scores, dim=1)
+        loss = loss_func(softmax_scores, yb)
 
         if opt is not None:
             loss.backward()
@@ -275,7 +287,7 @@ if __name__ == '__main__':
         
         scores_total = torch.cat(scores_total).numpy()
         labels_total = torch.cat(labels_total).numpy()
-        knn_cross_validation(KNN(), scores_total, labels_total, m=m)
+        return cross_validation(KNN(), scores_total, labels_total, m=m)
                 
 
 ###########################################################
@@ -334,28 +346,59 @@ if __name__ == '__main__':
 
             fig, axs = plt.subplots(2,5, figsize=(FIG_WITDH, FIG_HEIGHT))
             fig.suptitle(f"Incorrect, most unconfident images, Class {clazz}")
-            for (conf,img,_,actual), bx in zip(incorrect_least_10_confident, axs[1]):
+            for (conf,img,_,_), bx in zip(incorrect_least_10_confident, axs.flatten()):
                 bx.imshow(img.reshape((28,28)))
                 bx.set_title(round(conf,2))
-                bx.set_xlabel(actual)
             plt.savefig(os.path.join(PATH, f'2d_unconfident_imgs_class_{clazz}.pdf'))
             plt.close(fig)
 
 ###########################################################
 
-    # TODO: c, show progress of designing architecture
+    # TODO: c
     # labels = ['CrossEntropyLoss', 'NLLLoss']
     # losses, accies = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.CrossEntropyLoss()),
     #             dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.NLLLoss())])
     # plot_losses_and_accs(labels,losses, accies)
 
     # TODO: d
-    # dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, plot_cfm=True)
+    # dnn_cross_validation(CNN(channel_size, img_size, output_size), plot_cfm=False)
     
     # TODO: e
-    # run_with_knn(CNN(channel_size, img_size, output_size))
+    # x_axis = ['normal CNN','CNN with KNN']
+    # y_axis = [dnn_cross_validation(CNN(channel_size, img_size, output_size))[2],
+    #             run_with_knn(CNN(channel_size, img_size, fc2_size))]
+
+    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    # plt.plot(x_axis, y_axis)
+    # plt.ylabel('Accuracy')
+    # plt.title('CNN append with KNN')
+    # plt.savefig(os.path.join(PATH, f'2e_dnn.pdf'))
+    # plt.close(fig)
+
 
     # TODO: f 
+
+    # TODO: Competition
+    # test_data = get_strange_symbols_test_data()[0]
+    # # print(test_data)
+    # # test_data = torch.tensor(test_data)
+
+    # model = CNN(channel_size, img_size, output_size)
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # model.to(device)
+    # optimizer = optim.Adam(model.parameters(), learning_rate)
+
+    # for epoch in range(num_epoch):
+    #     model.train()
+    #     for xb, yb in dataloader:
+    #         scores = model(xb)
+    #         loss = loss_function(scores, yb)
+    #         loss.backward()
+    #         optimizer.step()
+    #         optimizer.zero_grad()
+    
+    # np.savetxt('test_predictions.csv', model(test_data).detach().numpy(), delimiter=',')
+
 
     # The code above is just given as a hint, you may change or adapt it.
     # Nevertheless, you are recommended to use the above loader with some batch size of choice.

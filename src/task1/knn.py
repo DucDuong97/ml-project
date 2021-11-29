@@ -2,6 +2,7 @@ import random
 
 import numpy as np
 from scipy.spatial import distance
+from scipy.signal import convolve2d
 import torch
 import math
 import matplotlib.pyplot as plt
@@ -102,22 +103,24 @@ def knn_weight(test, X, k, Y, dist_func, inverse_modifier):
         if labels[k] > max_label_weight:
             max_label = k
             max_label_weight = labels[k]
-    print("The label prediction is ", max_label, end="\r")
     return max_label
 
 
-def convolve(x, filter):
-    x = np.squeeze(x)
-    x_h, x_w = x.shape
-    filter = np.flipud(np.fliplr(filter))
-    filter_h, filter_w = filter.shape
-    res_h = x_h - filter_h + 1
-    res_w = x_w - filter_w + 1
-    res = np.zeros((res_h, res_w))
-    for i in range(res_h):
-        for j in range(res_w):
-            res[i, j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
-    return res
+def convolve(X, filter):
+    res_array = []
+    for x in X:
+        x = np.squeeze(x)
+        x_h, x_w = x.shape
+        filter = np.flipud(np.fliplr(filter))
+        filter_h, filter_w = filter.shape
+        res_h = x_h - filter_h + 1
+        res_w = x_w - filter_w + 1
+        res = np.zeros((res_h, res_w))
+        for i in range(res_h):
+            for j in range(res_w):
+                res[i, j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
+        res_array.append(res)
+    return np.array(res_array)
 
 
 #####################################################################
@@ -132,14 +135,10 @@ class KNN:
         self.filter = filter
 
     def fit(self, X, y):
-        if self.filter is not None:
-            X = np.array([convolve(i, self.filter) for i in X]) 
         self.train_x = X
         self.train_y = y
 
     def predict(self, X):
-        if self.filter is not None:
-            X = np.array([convolve(i, self.filter) for i in X]) 
         """
         Predict labels for new, unseen data.
 
@@ -203,7 +202,7 @@ def get_misclassified(clf, X, Y):
 
 # K-fold Cross Validation
 
-def knn_cross_validation(clf, X, Y, m=5, metric=accuracy):
+def cross_validation(clf, X, Y, m=5, metric=accuracy):
     """
     Performs m-fold cross validation.
 
@@ -306,7 +305,7 @@ def main(args):
     setup_matplotlib()
 
     # Set up data
-    data_size = 1000
+    data_size = 4000
     print(f"data size: {data_size}")
 
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
@@ -335,6 +334,7 @@ def main(args):
     # plt.xlabel('k')
     # plt.ylabel('accuracy')
     # plt.title('Accuracy for different k in KNN')
+    # fig.tight_layout()
     # plt.savefig(os.path.join(PATH, f'1c_knn_acc_k.pdf'))
     # plt.close(fig)
 
@@ -362,50 +362,56 @@ def main(args):
 
 
     # TODO: g
-    # blur_filter = np.ones((3,3)) * 1/9
-    # edge_filter = np.array([[-1,0,1],[0,0,0],[1,0,-1]])
-    # knn_non_filter = KNN()
-    # knn_blur_filter = KNN(filter=blur_filter)
-    # knn_edge_filter = KNN(filter=edge_filter)
+    blur_filter = np.ones((3,3)) * 1/9
+    edge_filter = np.array([[-1,0,1],[0,0,0],[1,0,-1]])
+    blur_x = convolve(train_x, blur_filter)
+    ed_x = convolve(train_x, edge_filter)
+    combined_x = convolve(convolve(train_x, blur_filter), edge_filter)
+    blur_x_scipy = np.array([convolve2d(x, blur_filter) for x in np.reshape(train_x, (data_size, 28,28))])
 
-    # filter = ['no filter','blur','detect edge']
-    # acc = [cross_validation(knn_non_filter, train_x, train_y),
-    #         cross_validation(knn_blur_filter, train_x, train_y),
-    #         cross_validation(knn_edge_filter, train_x, train_y)]
-
-    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
-    # plt.plot(filter, acc)
-    # plt.xlabel('Filter')
-    # plt.ylabel('Accuracy')
-    # plt.title('Accuracy for different Filters in KNN')
-    # plt.savefig(os.path.join(PATH, f'1g_knn_acc_filter.pdf'))
-    # plt.close(fig)
-
-
-
-    # # TODO: h
-    knn_algo = ['normal KNN', 'weight KNN']
-    acc = [knn_cross_validation(KNN(), train_x, train_y),
-           knn_cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+    filter = ['no filter','blur','detect edge', 'combined', 'blur scipy']
+    acc = [cross_validation(KNN(5), train_x, train_y),
+            cross_validation(KNN(5), blur_x, train_y),
+            cross_validation(KNN(5), ed_x, train_y),
+            cross_validation(KNN(5), combined_x, train_y),
+            cross_validation(KNN(5), blur_x_scipy, train_y)]
 
     fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
-    plt.plot(knn_algo, acc)
-    plt.xlabel('Algorithm')
+    plt.plot(filter, acc)
+    plt.xlabel('Filter')
     plt.ylabel('Accuracy')
-    plt.title('Accuracy for different Algorithm in KNN')
-    plt.savefig(os.path.join(PATH, f'1h_knn_acc_algo.pdf'))
+    plt.title('Accuracy for different Filters in KNN')
+    fig.tight_layout()
+    plt.savefig(os.path.join(PATH, f'1g_knn_acc_filter.pdf'))
     plt.close(fig)
 
 
 
+    # # TODO: h
+    # knn_algo = ['normal KNN', 'weight KNN']
+    # acc = [cross_validation(KNN(), train_x, train_y),
+    #        cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+
+    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    # plt.plot(knn_algo, acc)
+    # plt.xlabel('Algorithm')
+    # plt.ylabel('Accuracy')
+    # plt.title('Accuracy for different Algorithm in KNN')
+    # plt.savefig(os.path.join(PATH, f'1h_knn_acc_algo.pdf'))
+    # plt.close(fig)
+
+
+
     # TODO: i
-    print("________________________________________________________________________________________")
-    miss_classified_k = 4  # Best for printing
-    knn_euclid = KNN(miss_classified_k, euclidean_distance, return_neighbor=True)
-    miss = single_validation(0, 4, knn_euclid, train_x, train_y, get_misclassified)
+    # miss_classified_k = 4  # Best for printing
+    # knn_euclid = KNN(miss_classified_k, euclidean_distance, return_neighbor=True)
+    # miss = single_validation(0, 4, knn_euclid, train_x, train_y, get_misclassified)
     # knn_manhat = KNN(best_k, manhattan_distance)
     # knn_minkow = KNN(best_k, minkows_distance)
     # plotMissclassified(miss)
+
+
+    print("________________________________________________________________________________________")
 
 
 
