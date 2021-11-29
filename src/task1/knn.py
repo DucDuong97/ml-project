@@ -305,16 +305,12 @@ def main(args):
     setup_matplotlib()
 
     # Set up data
-    data_size = 4000
+    data_size = 200
     print(f"data size: {data_size}")
 
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
     train_x = train_x.numpy()[0:data_size]
     train_y = np.array(train_y)[0:data_size]
-
-    # Plot results
-    # cross_validation(knn_set[4], train_x, train_y)
-
 
 
     # a
@@ -326,38 +322,38 @@ def main(args):
 
 
     # # TODO: c
-    # k = range(1,11)
-    # acc = [cross_validation(KNN(i+1), train_x, train_y) for i in range(10)]
+    k = range(1,11)
+    acc = [cross_validation(KNN(i+1), train_x, train_y) for i in range(10)]
 
-    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
-    # plt.plot(k, acc)
-    # plt.xlabel('k')
-    # plt.ylabel('accuracy')
-    # plt.title('Accuracy for different k in KNN')
-    # fig.tight_layout()
-    # plt.savefig(os.path.join(PATH, f'1c_knn_acc_k.pdf'))
-    # plt.close(fig)
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(k, acc)
+    plt.xlabel('k')
+    plt.ylabel('accuracy')
+    plt.title('Accuracy for different k in KNN')
+    fig.tight_layout()
+    plt.savefig(os.path.join(PATH, f'1c_knn_acc_k.pdf'))
+    plt.close(fig)
 
 
 
     # # TODO: e
     best_k = 5  # replace when knowing the best k
-    # knn_euclid = KNN(best_k, euclidean_distance)
-    # knn_manhat = KNN(best_k, manhattan_distance)
-    # knn_kl = KNN(best_k, minkowki_distance)
+    knn_euclid = KNN(best_k, euclidean_distance)
+    knn_manhat = KNN(best_k, manhattan_distance)
+    knn_kl = KNN(best_k, minkowki_distance)
 
-    # dist = ['Euclid','Manhattan','Minkowski']
-    # acc = [cross_validation(knn_euclid, train_x, train_y),
-    #        cross_validation(knn_manhat, train_x, train_y),
-    #        cross_validation(knn_kl, train_x, train_y)]
+    dist = ['Euclid','Manhattan','Minkowski']
+    acc = [cross_validation(knn_euclid, train_x, train_y),
+           cross_validation(knn_manhat, train_x, train_y),
+           cross_validation(knn_kl, train_x, train_y)]
 
-    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
-    # plt.plot(dist, acc)
-    # plt.xlabel('Distance Function')
-    # plt.ylabel('Accuracy')
-    # plt.title('Accuracy for different Distance Function in KNN')
-    # plt.savefig(os.path.join(PATH, f'1e_knn_acc_dist.pdf'))
-    # plt.close(fig)
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(dist, acc)
+    plt.xlabel('Distance Function')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Distance Function in KNN')
+    plt.savefig(os.path.join(PATH, f'1e_knn_acc_dist.pdf'))
+    plt.close(fig)
 
 
 
@@ -388,27 +384,27 @@ def main(args):
 
 
     # # TODO: h
-    # knn_algo = ['normal KNN', 'weight KNN']
-    # acc = [cross_validation(KNN(), train_x, train_y),
-    #        cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
+    knn_algo = ['normal KNN', 'weight KNN']
+    acc = [cross_validation(KNN(), train_x, train_y),
+           cross_validation(Weight_KNN(inverse_modifier=10), train_x, train_y)]
 
-    # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
-    # plt.plot(knn_algo, acc)
-    # plt.xlabel('Algorithm')
-    # plt.ylabel('Accuracy')
-    # plt.title('Accuracy for different Algorithm in KNN')
-    # plt.savefig(os.path.join(PATH, f'1h_knn_acc_algo.pdf'))
-    # plt.close(fig)
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(knn_algo, acc)
+    plt.xlabel('Algorithm')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy for different Algorithm in KNN')
+    plt.savefig(os.path.join(PATH, f'1h_knn_acc_algo.pdf'))
+    plt.close(fig)
 
 
 
     # TODO: i
-    # miss_classified_k = 4  # Best for printing
-    # knn_euclid = KNN(miss_classified_k, euclidean_distance, return_neighbor=True)
-    # miss = single_validation(0, 4, knn_euclid, train_x, train_y, get_misclassified)
-    # knn_manhat = KNN(best_k, manhattan_distance)
-    # knn_minkow = KNN(best_k, minkows_distance)
-    # plotMissclassified(miss)
+    miss_classified_k = 4  # Best for printing
+    knn_euclid = KNN(miss_classified_k, euclidean_distance, return_neighbor=True)
+    miss = single_validation(0, 4, knn_euclid, train_x, train_y, get_misclassified)
+    knn_manhat = KNN(best_k, manhattan_distance)
+    knn_minkow = KNN(best_k, minkowki_distance)
+    plotMissclassified(miss)
 
 
     print("________________________________________________________________________________________")

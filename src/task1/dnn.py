@@ -138,9 +138,9 @@ if __name__ == '__main__':
                 nn.ReLU(),
                 nn.MaxPool2d(maxpool1_size, maxpool1_size),
                 nn.Conv2d(conv1_size, conv2_size, kernel_size=conv2_kernel, stride=conv2_stride),
-                nn.Conv2d(conv2_size, conv3_size, kernel_size=conv3_kernel, stride=conv3_stride),
+                # nn.Conv2d(conv2_size, conv3_size, kernel_size=conv3_kernel, stride=conv3_stride),
                 nn.ReLU(),
-                LNN(conv3_size * conv3_output_size * conv3_output_size, output_size)
+                LNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
             )
 
         def forward(self, x):
@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
     class CNN_BatchNorm(nn.Module):
         def __init__(self, channel_size, img_size, output_size):
-            super(CNN, self).__init__()
+            super(CNN_BatchNorm, self).__init__()
             self.channel_size = channel_size
             self.img_size = img_size
             self.output_size = output_size
@@ -162,8 +162,34 @@ if __name__ == '__main__':
                 BatchNorm(channel_size),
                 nn.Conv2d(channel_size, conv1_size, kernel_size=conv1_kernel, stride=conv1_stride),
                 nn.ReLU(),
-                BatchNorm(conv1_size),
                 nn.MaxPool2d(maxpool1_size, maxpool1_size),
+                BatchNorm(conv1_size),
+                nn.Conv2d(conv1_size, conv2_size, kernel_size=conv2_kernel, stride=conv2_stride),
+                nn.ReLU(),
+                LNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
+            )
+
+        def forward(self, x):
+            return self.cnn(x)
+
+        def clone(self):
+            return CNN(self.channel_size, self.img_size, self.output_size)
+
+
+    class CNN_BatchNorm_Builtin(nn.Module):
+        def __init__(self, channel_size, img_size, output_size):
+            super(CNN_BatchNorm_Builtin, self).__init__()
+            self.channel_size = channel_size
+            self.img_size = img_size
+            self.output_size = output_size
+
+            self.cnn = nn.Sequential(
+                Lambda(lambda x: x.view(-1, channel_size, img_size, img_size).float()),
+                nn.BatchNorm2d(channel_size),
+                nn.Conv2d(channel_size, conv1_size, kernel_size=conv1_kernel, stride=conv1_stride),
+                nn.ReLU(),
+                nn.MaxPool2d(maxpool1_size, maxpool1_size),
+                nn.BatchNorm2d(conv1_size),
                 nn.Conv2d(conv1_size, conv2_size, kernel_size=conv2_kernel, stride=conv2_stride),
                 nn.ReLU(),
                 LNN(conv2_size * conv2_output_size * conv2_output_size, output_size)
@@ -294,7 +320,7 @@ if __name__ == '__main__':
 
     # plot result
 
-    def plot_losses_and_accs(labels, losses, accuracies):
+    def plot_losses_and_accs(labels, losses, accuracies, filename):
 
         fig, axs = plt.subplots(2, figsize=(FIG_WITDH, FIG_HEIGHT))
         num = len(labels)
@@ -312,7 +338,7 @@ if __name__ == '__main__':
         axs[0].legend()
         axs[1].legend()
 
-        plt.savefig(os.path.join(PATH, f'2c_dnn_loss_epoch.pdf'))
+        plt.savefig(os.path.join(PATH, filename))
         plt.close(fig)
 
 
@@ -356,13 +382,15 @@ if __name__ == '__main__':
 
     # TODO: c
     # labels = ['CrossEntropyLoss', 'NLLLoss']
-    # losses, accies = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.CrossEntropyLoss()),
+    # losses, accies,_ = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.CrossEntropyLoss()),
     #             dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.NLLLoss())])
-    # plot_losses_and_accs(labels,losses, accies)
+    # plot_losses_and_accs(labels,losses, accies, '2c_dnn_loss_epoch.pdf')
+
 
     # TODO: d
-    # dnn_cross_validation(CNN(channel_size, img_size, output_size), plot_cfm=False)
-    
+    # dnn_cross_validation(CNN(channel_size, img_size, output_size), plot_cfm=True)
+
+
     # TODO: e
     # x_axis = ['normal CNN','CNN with KNN']
     # y_axis = [dnn_cross_validation(CNN(channel_size, img_size, output_size))[2],
@@ -377,6 +405,12 @@ if __name__ == '__main__':
 
 
     # TODO: f 
+    labels = ['normal CNN','CNN BatchNorm', 'Built-in Batch Norm']
+    losses, accies,_ = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size)),
+                        dnn_cross_validation(CNN_BatchNorm(channel_size, img_size, output_size)),
+                        dnn_cross_validation(CNN_BatchNorm_Builtin(channel_size, img_size, output_size))])
+    plot_losses_and_accs(labels,losses, accies, '2f_dnn.pdf')
+
 
     # TODO: Competition
     # test_data = get_strange_symbols_test_data()[0]

@@ -310,8 +310,8 @@ In this task, we run both normal and KNN versions with 4-fold validation. The ac
 
 \subsection{Batch Normalization}
 
-Batch Normalization is implemented as follows.
-\begin{lstlisting}[language=python, caption=Batch Normalization class]
+Batch Normalization is implemented as follows:
+\begin{lstlisting}[language=python]
 class BatchNorm(nn.Module):
         def __init__(self, C, momentum=0.9):
             super().__init__()
@@ -340,7 +340,9 @@ class BatchNorm(nn.Module):
             return out
 \end{lstlisting}
 
-\includegraphics{figures/2c[2]_dnn_loss_epoch.pdf}
+There is no hug differences when Batch Normalization is applied. We put a Batch Normalization layer before each Convolution layer.
+
+\includegraphics{figures/2f_dnn.pdf}
 
 
 % Print references
