@@ -418,25 +418,25 @@ if __name__ == '__main__':
 
 
     # TODO: Competition
-    # test_data = get_strange_symbols_test_data()[0]
-    # # print(test_data)
-    # # test_data = torch.tensor(test_data)
+    test_data = get_strange_symbols_test_data()[0]
+    # print(test_data)
+    # test_data = torch.tensor(test_data)
 
-    # model = CNN(channel_size, img_size, output_size)
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # model.to(device)
-    # optimizer = optim.Adam(model.parameters(), learning_rate)
+    model = CNN(channel_size, img_size, output_size)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    optimizer = optim.Adam(model.parameters(), learning_rate)
 
-    # for epoch in range(num_epoch):
-    #     model.train()
-    #     for xb, yb in dataloader:
-    #         scores = model(xb)
-    #         loss = loss_function(scores, yb)
-    #         loss.backward()
-    #         optimizer.step()
-    #         optimizer.zero_grad()
+    for epoch in range(num_epoch):
+        model.train()
+        for xb, yb in dataloader:
+            scores = model(xb)
+            loss = loss_function(scores, yb)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
     
-    # np.savetxt('test_predictions.csv', model(test_data).detach().numpy(), delimiter=',')
+    np.savetxt('test_predictions.csv', model(test_data).detach().numpy(), delimiter=',')
 
 
     # The code above is just given as a hint, you may change or adapt it.
