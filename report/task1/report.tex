@@ -194,6 +194,14 @@ The third case is with a classifier with Manhattan distance metric and edge filt
 
 Many misclassified images has a very close pattern compare to their neighbors but the result of the predictions are still incorrect. Because we have many images of different classes that look identical to each other, many was predicted with the wrong label.
 
+\subsection{Conclusion}
+
+We implemented the algorithm for K-nearest-neighbors, which calculates the distance between the current image and other fitted images in the classifier. The classifier uses one of three different metrics, based on the scalar of Minkowski distance function. The accuracy of each model is determined by m-Fold-Cross-Validation. We also implemented convolution operation with filter. Weight-KNN does not count the number of each labels from k-nearest neighbors but the closer the neighbor to the calculating image, the more impact it will make to the prediction. Lastly we shown the misclassified samples from different models.
+
+Most of the classifiers use k=5 as this value yield the best accuracy from range of 1 to 10.
+
+
+
 \section{Deep Neural Network}
 \subsection{Neural Network Term}
 

@@ -227,8 +227,8 @@ if __name__ == '__main__':
             train_loader = DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
             test_loader = DataLoader(dataset, batch_size=batch_size, sampler=test_sampler)
 
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-            model.to(device)
+            #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            #model.to(device)
             optimizer = optim.Adam(model.parameters(), lr)
 
             # get the result of last epoch to produce analytics
@@ -290,8 +290,8 @@ if __name__ == '__main__':
     def run_with_knn(model, dataloader=dataloader, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, m=4):
         model = model.clone()
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model.to(device)
+        #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        #model.to(device)
         optimizer = optim.Adam(model.parameters(), lr)
 
         for epoch in range(num_epochs):
@@ -343,6 +343,7 @@ if __name__ == '__main__':
 
 
     def plot_confusion_matrix(labels, preds):
+        plt.rcParams.update({'axes.titlesize': 6})
         plt.figure(figsize=(FIG_WITDH,FIG_HEIGHT))
         cm = confusion_matrix(labels, preds)
         df_cm = DataFrame(cm)
@@ -352,6 +353,7 @@ if __name__ == '__main__':
 
 
     def plot_confident_imgs(confs, imgs, preds, actuals):
+        plt.rcParams.update({'axes.titlesize': 6})
         classes = np.unique(actuals)
         for clazz in classes:
             zips = zip(confs, imgs, preds,actuals)
@@ -372,7 +374,9 @@ if __name__ == '__main__':
 
             fig, axs = plt.subplots(2,5, figsize=(FIG_WITDH, FIG_HEIGHT))
             fig.suptitle(f"Incorrect, most unconfident images, Class {clazz}")
+
             for (conf,img,_,_), bx in zip(incorrect_least_10_confident, axs.flatten()):
+
                 bx.imshow(img.reshape((28,28)))
                 bx.set_title(round(conf,2))
             plt.savefig(os.path.join(PATH, f'2d_unconfident_imgs_class_{clazz}.pdf'))
@@ -392,6 +396,7 @@ if __name__ == '__main__':
 
 
     # TODO: e
+
     # x_axis = ['normal CNN','CNN with KNN']
     # y_axis = [dnn_cross_validation(CNN(channel_size, img_size, output_size))[2],
     #             run_with_knn(CNN(channel_size, img_size, fc2_size))]
@@ -439,6 +444,5 @@ if __name__ == '__main__':
 
     # Finally you have to submit, beneath the report, a csv file of predictions for the test data.
     # Extract the testdata using the provided method:
-    # TODO
     # Use the network to get predictions (should be of shape 1500 x 15) and export it to csv using e.g. np.savetxt().
 

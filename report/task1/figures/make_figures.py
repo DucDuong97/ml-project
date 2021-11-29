@@ -5,7 +5,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Path to which figures will be saved
-PATH = '../../report/task1/figures'
+PATH = '.'
 # Width of the text area in our document. Given in inches
 TEXT_WIDTH = 5.78851
 # Multiplicators for the figure's width
@@ -14,12 +14,8 @@ TEXT_WIDTH_MUL_WIDE = 0.9
 # Aspect ratio of figures
 ASPECT = 3. / 4.
 
-FIG_WITDH = TEXT_WIDTH * TEXT_WIDTH_MUL
-FIG_HEIGHT = FIG_WITDH * ASPECT
-FIG_HEIGHT_FLAT = FIG_HEIGHT * 0.45
-
 # Font sizes
-SMALL_SIZE = 4
+SMALL_SIZE = 9
 MEDIUM_SIZE = 11
 BIGGER_SIZE = 12
 
@@ -36,7 +32,7 @@ def setup_matplotlib():
         'ytick.labelsize': SMALL_SIZE,
         'legend.fontsize': SMALL_SIZE,
         'figure.titlesize': SMALL_SIZE,
-        'text.usetex': False,
+        'text.usetex': True,
         'mathtext.fontset': 'cm',
         'mathtext.rm': 'serif',
         'text.latex.preamble': ['\\usepackage{amsmath}\n'

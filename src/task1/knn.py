@@ -14,6 +14,7 @@ from functools import partial
 from dataset import *
 from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
+
 #####################################################################
 
 # distance function
@@ -27,7 +28,8 @@ def manhattan_distance(a, b):
 
 
 def minkowki_distance(p, q):
-    return distance.minkowski(p.flatten(), q.flatten())
+    return distance.minkowski(p.flatten(), q.flatten(), p=3)
+
 
 #####################################################################
 
@@ -141,7 +143,6 @@ class KNN:
     def predict(self, X):
         """
         Predict labels for new, unseen data.
-
         :param X: Test data for which to predict labels. Array of shape (n', ..) (same as in fit)
         :return: Labels for all points in X. Array of shape (n',)
         """
@@ -161,7 +162,6 @@ class Weight_KNN:
         self.train_y = y
 
     def predict(self, X):
-        # TODO: b
         """
         Predict labels for new, unseen data.
 
@@ -169,6 +169,7 @@ class Weight_KNN:
         :return: Labels for all points in X. Array of shape (n',)
         """
         return [knn_weight(x, self.train_x, self.k, self.train_y, self.dist_function, self.inverse_modifier) for x in X]
+
 
 #####################################################################
 
@@ -279,8 +280,9 @@ def plot_samples(sample_x, sample_y, amount):
 
 
 def plotMissclassified(miss):
+    plt.rcParams.update({'axes.titlesize': 6})
     amount = len(miss)
-    if amount ==0: return
+    if amount == 0: return
     for i in range(amount):
         img, actual, pred, neighbors = miss[i]
         neigh_num = len(neighbors)
@@ -289,23 +291,26 @@ def plotMissclassified(miss):
         axs[0].imshow(np.squeeze(img))
 
         for j in range(neigh_num):
-            axs[j+1].set_title(f'Lbl: {neighbors[j].label}')
-            axs[j+1].imshow(np.squeeze(neighbors[j].image))
-        
+            axs[j + 1].set_title(f'Lbl: {neighbors[j].label}')
+            axs[j + 1].imshow(np.squeeze(neighbors[j].image))
+
+
         plt.savefig(os.path.join(PATH, f'1i_miss_classified_{i}.pdf'))
         plt.close(fig)
 
 
 #####################################################################
 
-# Mainnnnn
+# Main
 
 def main(args):
     # Set up plot
     setup_matplotlib()
 
     # Set up data
-    data_size = 200
+
+    data_size = 4000
+
     print(f"data size: {data_size}")
 
     train_x, train_y = get_strange_symbols_train_data(root=args.train_data)
@@ -314,12 +319,10 @@ def main(args):
 
 
     # a
-    amount = 4
-    sample_x = train_x[:1000]
-    sample_y = train_y[:1000]
+    # amount = 4
+    # sample_x = train_x[:1000]
+    # sample_y = train_y[:1000]
     # plot_samples(sample_x, sample_y, amount)
-
-
 
     # # TODO: c
     k = range(1,11)
@@ -333,8 +336,6 @@ def main(args):
     fig.tight_layout()
     plt.savefig(os.path.join(PATH, f'1c_knn_acc_k.pdf'))
     plt.close(fig)
-
-
 
     # # TODO: e
     best_k = 5  # replace when knowing the best k
@@ -358,6 +359,7 @@ def main(args):
 
 
     # TODO: g
+
     blur_filter = np.ones((3,3)) * 1/9
     edge_filter = np.array([[-1,0,1],[0,0,0],[1,0,-1]])
     blur_x = convolve(train_x, blur_filter)
