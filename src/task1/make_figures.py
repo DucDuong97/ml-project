@@ -19,7 +19,7 @@ FIG_HEIGHT = FIG_WITDH * ASPECT
 FIG_HEIGHT_FLAT = FIG_HEIGHT * 0.45
 
 # Font sizes
-SMALL_SIZE = 9
+SMALL_SIZE = 4
 MEDIUM_SIZE = 11
 BIGGER_SIZE = 12
 
@@ -30,13 +30,13 @@ def setup_matplotlib():
     plt.rcParams.update({
         'font.family': 'serif',
         'font.size': SMALL_SIZE,
-        'axes.titlesize': MEDIUM_SIZE,
-        'axes.labelsize': MEDIUM_SIZE,
+        'axes.titlesize': SMALL_SIZE,
+        'axes.labelsize': SMALL_SIZE,
         'xtick.labelsize': SMALL_SIZE,
         'ytick.labelsize': SMALL_SIZE,
         'legend.fontsize': SMALL_SIZE,
-        'figure.titlesize': MEDIUM_SIZE,
-        'text.usetex': True,
+        'figure.titlesize': SMALL_SIZE,
+        'text.usetex': False,
         'mathtext.fontset': 'cm',
         'mathtext.rm': 'serif',
         'text.latex.preamble': ['\\usepackage{amsmath}\n'

@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     class CNN_BatchNorm(nn.Module):
         def __init__(self, channel_size, img_size, output_size):
-            super(CNN, self).__init__()
+            super(CNN_BatchNorm, self).__init__()
             self.channel_size = channel_size
             self.img_size = img_size
             self.output_size = output_size
@@ -190,8 +190,8 @@ if __name__ == '__main__':
             train_loader = DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
             test_loader = DataLoader(dataset, batch_size=batch_size, sampler=test_sampler)
 
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-            model.to(device)
+            #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            #model.to(device)
             optimizer = optim.Adam(model.parameters(), lr)
 
             # get the result of last epoch to produce analytics
@@ -252,8 +252,8 @@ if __name__ == '__main__':
     def run_with_knn(model, dataloader=dataloader, lr=learning_rate, num_epochs=num_epoch, loss_func=loss_function, m=4):
         model = model.clone()
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model.to(device)
+        #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        #model.to(device)
         optimizer = optim.Adam(model.parameters(), lr)
 
         for epoch in range(num_epochs):
@@ -283,6 +283,7 @@ if __name__ == '__main__':
     # plot result
 
     def plot_losses_and_accs(labels, losses, accuracies):
+        plt.rcParams.update({'axes.titlesize': 6})
 
         fig, axs = plt.subplots(2, figsize=(FIG_WITDH, FIG_HEIGHT))
         num = len(labels)
@@ -299,12 +300,13 @@ if __name__ == '__main__':
         plt.setp(axs[1], xlabel='epoch')
         axs[0].legend()
         axs[1].legend()
-
+        plt.tight_layout()
         plt.savefig(os.path.join(PATH, f'2c_dnn_loss_epoch.pdf'))
         plt.close(fig)
 
 
     def plot_confusion_matrix(labels, preds):
+        plt.rcParams.update({'axes.titlesize': 6})
         plt.figure(figsize=(FIG_WITDH,FIG_HEIGHT))
         cm = confusion_matrix(labels, preds)
         df_cm = DataFrame(cm)
@@ -314,6 +316,7 @@ if __name__ == '__main__':
 
 
     def plot_confident_imgs(confs, imgs, preds, actuals):
+        plt.rcParams.update({'axes.titlesize': 6})
         classes = np.unique(actuals)
         for clazz in classes:
             zips = zip(confs, imgs, preds,actuals)
@@ -334,7 +337,7 @@ if __name__ == '__main__':
 
             fig, axs = plt.subplots(2,5, figsize=(FIG_WITDH, FIG_HEIGHT))
             fig.suptitle(f"Incorrect, most unconfident images, Class {clazz}")
-            for (conf,img,_,actual), bx in zip(incorrect_least_10_confident, axs[1]):
+            for (conf,img,_,actual), bx in zip(incorrect_least_10_confident, axs.flatten()):
                 bx.imshow(img.reshape((28,28)))
                 bx.set_title(round(conf,2))
                 bx.set_xlabel(actual)
@@ -344,24 +347,25 @@ if __name__ == '__main__':
 ###########################################################
 
     # TODO: c, show progress of designing architecture
-    # labels = ['CrossEntropyLoss', 'NLLLoss']
-    # losses, accies = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.CrossEntropyLoss()),
+    #labels = ['CrossEntropyLoss', 'NLLLoss']
+    #losses, accies = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.CrossEntropyLoss()),
     #             dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, loss_func=nn.NLLLoss())])
-    # plot_losses_and_accs(labels,losses, accies)
+    #plot_losses_and_accs(labels,losses, accies)
 
     # TODO: d
     # dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y, plot_cfm=True)
     
     # TODO: e
-    # run_with_knn(CNN(channel_size, img_size, output_size))
+    #run_with_knn(CNN(channel_size, img_size, output_size))
 
     # TODO: f 
+    labels = ['CNN', 'CNN with batch norm']
+    losses, accies = zip(*[dnn_cross_validation(CNN(channel_size, img_size, output_size), train_x, train_y),
+                dnn_cross_validation(CNN_BatchNorm(channel_size, img_size, output_size), train_x, train_y)])
+    plot_losses_and_accs(labels,losses, accies)
 
-    # The code above is just given as a hint, you may change or adapt it.
-    # Nevertheless, you are recommended to use the above loader with some batch size of choice.
 
     # Finally you have to submit, beneath the report, a csv file of predictions for the test data.
     # Extract the testdata using the provided method:
-    # TODO
     # Use the network to get predictions (should be of shape 1500 x 15) and export it to csv using e.g. np.savetxt().
 
