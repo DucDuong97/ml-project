@@ -7,6 +7,10 @@ import urllib.request
 import zipfile
 
 import pandas as pd
+import matplotlib.pyplot as plt
+
+
+from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
 # Change this to the path where you want to download the dataset to
 DEFAULT_ROOT = '../../data/wine'
@@ -73,6 +77,64 @@ def get_wine_reviews_data(root=DEFAULT_ROOT):
     data = pd.read_csv(file_path, index_col=0)
     return data
 
+
+def extract_wine_vintage(data):
+    if (data['vintage'] is not None):
+        return
+    # TODO: 1b
+
+
+def plot_histograms(data):
+    for (colName, colData) in data.iteritems():
+        fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+
+        #TODO: 1c
+
+        fig.tight_layout()
+        plt.savefig(os.path.join(PATH, f'1c_histogram_of_{colName}.pdf'))
+        plt.close(fig)
+
+
+def compute_statistics(data):
+    stats = {}
+    
+    #TODO: 1d
+    # give each stat a name and add it to the dict
+    # write report for it
+
+    return stats
+
+
+def transform(data, stats):
+    #TODO: 1e
+    # write report for it
+    pass
+
+
+
 if __name__ == '__main__':
     print("Dowload data")
-    get_wine_reviews_data()
+
+    setup_matplotlib()
+
+    """
+    - 129971 rows
+
+    - columns:
+        'country': string
+        'description': string
+        'designation': string
+        'points': integer
+        'price': float
+        'province': string
+        'region_1': string
+        'region_2': string
+        'taster_name': string
+        'taster_twitter_handle': string begin with @
+        'title': string year string (string)
+        'variety': string
+        'winery': string
+    """
+    
+    data = get_wine_reviews_data()
+    # print(data['winery'])
