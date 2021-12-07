@@ -5,16 +5,15 @@ import shutil
 import tempfile
 import urllib.request
 import zipfile
+import re
 
 import pandas as pd
 import matplotlib.pyplot as plt
-
 
 from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
 # Change this to the path where you want to download the dataset to
 DEFAULT_ROOT = '../../data/wine'
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                             #
@@ -24,7 +23,7 @@ DEFAULT_ROOT = '../../data/wine'
 
 URL = r'http://ml.cs.uni-kl.de/download/wine-reviews.zip'
 CHECKSUM = 'c7fa81ba06ed48f290463fbf3bfff4229b68fce8aa94d6a200e1e59002e9a83c'
-BUFFERSIZE = 16*1024*1024
+BUFFERSIZE = 16 * 1024 * 1024
 
 
 def check_exists(root):
@@ -79,16 +78,25 @@ def get_wine_reviews_data(root=DEFAULT_ROOT):
 
 
 def extract_wine_vintage(data):
-    if (data['vintage'] is not None):
+    if 'vintage' in data.columns:
         return
-    # TODO: 1b
+    years = []
+    for index, row in data.iterrows():
+        matching_num = re.findall(r'[0-9][0-9][0-9][0-9]', row['title'])
+        possible_year = [int(i) for i in matching_num if 2022 >= int(i) > 1900]
+        if len(possible_year) > 0:
+            years.append(max(possible_year))
+        else:
+            years.append(None)
+    data['vintage'] = years
+    return data
 
 
 def plot_histograms(data):
     for (colName, colData) in data.iteritems():
         fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
 
-        #TODO: 1c
+        # TODO: 1c
 
         fig.tight_layout()
         plt.savefig(os.path.join(PATH, f'1c_histogram_of_{colName}.pdf'))
@@ -97,23 +105,25 @@ def plot_histograms(data):
 
 def compute_statistics(data):
     stats = {}
-    
-    #TODO: 1d
-    # give each stat a name and add it to the dict
-    # write report for it
-
+    for label, content in data.iteritems():
+        values = content.tolist()
+        values = [x for x in values if str(x) != 'nan']
+        if isinstance(values[0], (int, float)):
+            print(values[0])
+            print(f'Working with {label} with type {type(values[0])}')
+            stats[label] = {"minimum": min(values), "maximum": max(values), "average": sum(values) / len(values)}
+            print(f'Success with {label}')
     return stats
 
 
 def transform(data, stats):
-    #TODO: 1e
+    # TODO: 1e
     # write report for it
     pass
 
 
-
 if __name__ == '__main__':
-    print("Dowload data")
+    #print("Download data")
 
     setup_matplotlib()
 
@@ -135,6 +145,9 @@ if __name__ == '__main__':
         'variety': string
         'winery': string
     """
-    
+
     data = get_wine_reviews_data()
-    # print(data['winery'])
+    # data = extract_wine_vintage(data)
+    # data.hist(column='vintage', bins=20)
+    # plt.show()
+    # print(compute_statistics(data))
