@@ -119,7 +119,34 @@ def compute_statistics(data):
 def transform(data, stats):
     # TODO: 1e
     # write report for it
-    pass
+    
+    vectors = {}
+
+    # 'country': string
+    countries = data['country']
+    vectors['country'] = pd.get_dummies(countries).to_numpy()
+    # 'description': string
+    # 'designation': string
+    # 'price': float
+    # 'province': string
+    # 'region_1': string
+    # 'region_2': string
+    # 'taster_name': string
+    # 'taster_twitter_handle': string begin with @
+    # 'title': string year string (string)
+    # 'variety': string
+    # 'winery': string
+    # 'points': integer
+    vectors['points'] = data['points'].to_numpy()
+
+    return vectors
+
+
+def vectorized_data():
+    data = get_wine_reviews_data()
+    data = extract_wine_vintage(data)
+    stats = compute_statistics(data)
+    return transform(data, stats)
 
 
 if __name__ == '__main__':
