@@ -16,7 +16,6 @@ class RidgeRegression:
         XTX = np.matmul(X.T,X)
         XTy = np.matmul(X.T,y)
         CId = np.eye(d)/self.C
-        print(XTX)
         self.weight = np.linalg.inv(XTX + CId) @ XTy
 
     def predict(self, X):
@@ -27,13 +26,17 @@ class RidgeRegression:
 class RidgeRegressionBias:
     def __init__(self, C=1):
         self.rr = RidgeRegression(C)
-        self.bias = 0
 
     def fit(self, X, y):
-        raise NotImplementedError('TODO')
+        data_size = len(y)
+        self.bias = np.mean(y)
+        X = np.c_[X, np.ones(data_size)*self.bias]
+        self.rr.fit(X,y)
 
     def predict(self, X):
-        raise NotImplementedError('TODO')
+        data_size = len(X)
+        X = np.c_[X, np.ones(data_size)]
+        return self.rr.predict(X)
 
 
 def projection(data):
@@ -73,7 +76,7 @@ if __name__ == '__main__':
         clf.fit(train_x, points)
         # plot clf.predict
         clf = RidgeRegressionBias()
-        # clf.fit(train_x, points)
+        clf.fit(train_x, points)
         # plot clf.predict
 
     #TODO: 2d, should be smaller than 6.3
