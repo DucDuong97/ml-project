@@ -94,22 +94,22 @@ def extract_wine_vintage(data):
 
 def plot_histograms(data, columns):
     for label, content in data.iteritems():
-        fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
-        # TODO: 1c
+        # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
         if label in columns:
-            print(f'Working on {label}')
             values = content.tolist()
             values = [x for x in values if str(x) != 'nan']
             if isinstance(values[0], (int, float)):
-                data.hist(column=label, bins=10)
-                plt.show()
+                data.hist(column=label, bins=columns[label])
             else:
-                return
+                if columns[label] is not None:
+                    data[label].value_counts().head(columns[label]).plot.bar()
+                else:
+                    data[label].value_counts().plot.bar()
+            plt.show()
 
         # fig.tight_layout()
         # plt.savefig(os.path.join(PATH, f'1c_histogram_of_{colName}.pdf'))
         # plt.close(fig)
-
 
 
 def compute_statistics(data):
@@ -127,7 +127,7 @@ def compute_statistics(data):
 def transform(data, stats):
     # TODO: 1e
     # write report for it
-    
+
     vectors = {}
 
     # 'country': string
@@ -158,7 +158,7 @@ def vectorized_data():
 
 
 if __name__ == '__main__':
-    #print("Download data")
+    # print("Download data")
 
     setup_matplotlib()
 
@@ -182,11 +182,9 @@ if __name__ == '__main__':
     """
 
     data = get_wine_reviews_data()
-    #data = extract_wine_vintage(data)
-    #print(data['vintage'])
-    #data.hist(column='vintage', bins=10)
-    #plt.show()
-    #print(compute_statistics(data))
-    plot_histograms(data, ["points", "price"])
-
-
+    # data = extract_wine_vintage(data)
+    # print(data['vintage'])
+    # data.hist(column='vintage', bins=10)
+    # plt.show()
+    # print(compute_statistics(data))
+    # plot_histograms(data, {"country": 5, "price": 3, "points": 3})
