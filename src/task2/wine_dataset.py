@@ -83,7 +83,7 @@ def extract_wine_vintage(data):
     years = []
     for index, row in data.iterrows():
         matching_num = re.findall(r'[0-9][0-9][0-9][0-9]', row['title'])
-        possible_year = [int(i) for i in matching_num if 2022 >= int(i) > 1900]
+        possible_year = [int(i) for i in matching_num if 2022 >= int(i) > 1800]
         if len(possible_year) > 0:
             years.append(max(possible_year))
         else:
@@ -92,15 +92,24 @@ def extract_wine_vintage(data):
     return data
 
 
-def plot_histograms(data):
-    for (colName, colData) in data.iteritems():
-        fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+def plot_histograms(data, columns):
+    for label, content in data.iteritems():
+        # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+        if label in columns:
+            values = content.tolist()
+            values = [x for x in values if str(x) != 'nan']
+            if isinstance(values[0], (int, float)):
+                data.hist(column=label, bins=columns[label])
+            else:
+                if columns[label] is not None:
+                    data[label].value_counts().head(columns[label]).plot.bar()
+                else:
+                    data[label].value_counts().plot.bar()
+            plt.show()
 
-        # TODO: 1c
-
-        fig.tight_layout()
-        plt.savefig(os.path.join(PATH, f'1c_histogram_of_{colName}.pdf'))
-        plt.close(fig)
+        # fig.tight_layout()
+        # plt.savefig(os.path.join(PATH, f'1c_histogram_of_{colName}.pdf'))
+        # plt.close(fig)
 
 
 def compute_statistics(data):
@@ -109,17 +118,16 @@ def compute_statistics(data):
         values = content.tolist()
         values = [x for x in values if str(x) != 'nan']
         if isinstance(values[0], (int, float)):
-            print(values[0])
-            print(f'Working with {label} with type {type(values[0])}')
-            stats[label] = {"minimum": min(values), "maximum": max(values), "average": sum(values) / len(values)}
-            print(f'Success with {label}')
+            stats[f'{label}_minimum'] = min(values)
+            stats[f'{label}_maximum'] = max(values)
+            stats[f'{label}_average'] = sum(values) / len(values)
     return stats
 
 
 def transform(data, stats):
     # TODO: 1e
     # write report for it
-    
+
     vectors = {}
 
     # 'country': string
@@ -150,7 +158,7 @@ def vectorized_data():
 
 
 if __name__ == '__main__':
-    #print("Download data")
+    # print("Download data")
 
     setup_matplotlib()
 
@@ -175,6 +183,8 @@ if __name__ == '__main__':
 
     data = get_wine_reviews_data()
     # data = extract_wine_vintage(data)
-    # data.hist(column='vintage', bins=20)
+    # print(data['vintage'])
+    # data.hist(column='vintage', bins=10)
     # plt.show()
     # print(compute_statistics(data))
+    # plot_histograms(data, {"country": 5, "price": 3, "points": 3})
