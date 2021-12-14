@@ -130,57 +130,66 @@ def transform(data, stats):
     # write report for it
 
     vectors = {}
-
     # 'country': string
+    print('begin transform country')
     countries = data['country']
     vectors['country'] = pd.get_dummies(countries).to_numpy()
 
     # 'description': string
 
     # 'designation': string
-    designations = data['designation']
-    vectors['designation'] = pd.get_dummies(designations).to_numpy()
+    # print('begin transform designation')
+    # designations = data['designation']
+    # vectors['designation'] = pd.get_dummies(designations).to_numpy()
 
     # 'price': float
-    vectors['price'] = data['price'].to_numpy()
+    vectors['price'] = np.nan_to_num(np.reshape(data['price'].to_numpy(),(data.shape[0],1)))
 
 
     # 'province': string
-    designations = data['designation']
-    vectors['designation'] = pd.get_dummies(designations).to_numpy()
+    print('begin transform provinces')
+    provinces = data['province']
+    vectors['province'] = pd.get_dummies(provinces).to_numpy()
 
     # 'region_1': string
+    print('begin transform region_1')
     r1s = data['region_1']
     vectors['region_1'] = pd.get_dummies(r1s).to_numpy()
 
     # 'region_2': string
+    print('begin transform region_2')
     r2s = data['region_2']
     vectors['region_2'] = pd.get_dummies(r2s).to_numpy()
 
     # 'taster_name': string
+    print('begin transform taster_name')
     taster_names = data['taster_name']
     vectors['taster_name'] = pd.get_dummies(taster_names).to_numpy()
 
     # 'taster_twitter_handle': string begin with @
+    print('begin transform taster_twitter_handle')
     taster_twitters = data['taster_twitter_handle']
     vectors['taster_twitter_handle'] = pd.get_dummies(taster_twitters).to_numpy()
 
     # 'title': string year string (string)
 
     # 'variety': string
+    print('begin transform variety')
     varieties = data['variety']
     vectors['variety'] = pd.get_dummies(varieties).to_numpy()
 
     # 'winery': string
-    wineries = data['winery']
-    vectors['winery'] = pd.get_dummies(wineries).to_numpy()
+    # print('begin transform winery')
+    # wineries = data['winery']
+    # vectors['winery'] = pd.get_dummies(wineries).to_numpy()
 
     # 'points': integer
     vectors['points'] = data['points'].to_numpy()
 
     # 'vintage': integer
-    vectors['vintage'] = data['vintage'].to_numpy()
+    vectors['vintage'] = np.nan_to_num(np.reshape(data['vintage'].to_numpy(),(data.shape[0],1)))
 
+    print('end transform')
     return vectors
 
 

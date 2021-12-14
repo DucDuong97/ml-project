@@ -218,14 +218,13 @@ def cross_validation(clf, X, Y, m=5, metric=accuracy):
     tic = time.perf_counter()
     print()
     print(f"{m}-fold validation")
-    print(f"k: {clf.k}")
 
-    pool = multiprocessing.Pool(m)
-    accuracies = pool.map(partial(single_validation, X=X, m=m, Y=Y, clf=clf, metric=metric), range(m))
+    # pool = multiprocessing.Pool(m)
+    # accuracies = pool.map(partial(single_validation, X=X, m=m, Y=Y, clf=clf, metric=metric), range(m))
 
-    # accuracies = []
-    # for i in range(m):
-    #     accuracies.append(single_validation(i, m, clf, X, Y, metric))
+    accuracies = []
+    for i in range(m):
+        accuracies.append(single_validation(i, m, clf, X, Y, metric))
 
     toc = time.perf_counter()
     print(f"Execute in {toc - tic:0.4f} seconds")

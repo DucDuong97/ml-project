@@ -47,22 +47,20 @@ def projection(data):
 
 
 def transform(data):
-    print("begin transform")
-    result = []
-    num_row = list(data.keys())[0].size()
-    count = 0
-    for i in range(num_row):
-        row = []
-        for key in data.keys():
-            for j in data[key]:
-                row.append(j)
-        result.append(row)
-    print("end transform")
-    return result
+    values = list(data.values())
+    result = None
+    for value in values:
+        if result is None:
+            result = value
+        else:
+            print(result.shape, value.shape)
+            result = np.concatenate((result, value), axis=1)
+    return np.array(result)
 
 
 def mean_sqrt_err(clf, X,Y):
-    return 1 / np.size(X) * sum(clf.predict(X) - Y)
+    # print(clf.predict(X))
+    return np.sum(np.power(clf.predict(X) - Y,2)) / len(Y)
 
 
 def forward_stepwise_selection(data, points, k=5):
@@ -80,19 +78,19 @@ if __name__ == '__main__':
 
 
     #TODO: 2b, 2c
-    for col, col_data in data.items():
-        train_x = projection(col_data)
-        # plot projected data
-        clf = RidgeRegression()
-        clf.fit(train_x, points)
-        # plot clf.predict
-        clf = RidgeRegressionBias()
-        clf.fit(train_x, points)
-        # plot clf.predict
+    # for col, col_data in data.items():
+    #     train_x = projection(col_data)
+    #     # plot projected data
+    #     clf = RidgeRegression()
+    #     clf.fit(train_x, points)
+    #     # plot clf.predict
+    #     clf = RidgeRegressionBias()
+    #     clf.fit(train_x, points)
+    #     # plot clf.predict
 
     #TODO: 2d, should be smaller than 6.3
 
-    print(f'Acc: {cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)}')
+    print(f'Loss: {cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)}')
 
     #TODO: 2f
     # forward_stepwise_selection(data, points)
