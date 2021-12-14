@@ -16,7 +16,6 @@ class RidgeRegression:
         XTX = np.matmul(X.T,X)
         XTy = np.matmul(X.T,y)
         CId = np.eye(d)/self.C
-        print(XTX)
         self.weight = np.linalg.inv(XTX + CId) @ XTy
 
     def predict(self, X):
@@ -44,11 +43,22 @@ def projection(data):
 
 
 def transform(data):
-    pass
+    print("begin transform")
+    result = []
+    num_row = list(data.keys())[0].size()
+    count = 0
+    for i in range(num_row):
+        row = []
+        for key in data.keys():
+            for j in data[key]:
+                row.append(j)
+        result.append(row)
+    print("end transform")
+    return result
 
 
 def mean_sqrt_err(clf, X,Y):
-    pass
+    return 1 / np.size(X) * sum(clf.predict(X) - Y)
 
 
 def forward_stepwise_selection(data, points, k=5):
@@ -63,7 +73,7 @@ if __name__ == '__main__':
     # return a dict that values are a list
     data = vectorized_data()
     points = np.array(data.pop('points'))
-    print(points)
+
 
     #TODO: 2b, 2c
     for col, col_data in data.items():
@@ -77,7 +87,8 @@ if __name__ == '__main__':
         # plot clf.predict
 
     #TODO: 2d, should be smaller than 6.3
-    # print(f'Acc: {cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)}')
+
+    print(f'Acc: {cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)}')
 
     #TODO: 2f
     # forward_stepwise_selection(data, points)

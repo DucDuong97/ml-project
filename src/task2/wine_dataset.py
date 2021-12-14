@@ -7,6 +7,7 @@ import urllib.request
 import zipfile
 import re
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -133,19 +134,52 @@ def transform(data, stats):
     # 'country': string
     countries = data['country']
     vectors['country'] = pd.get_dummies(countries).to_numpy()
+
     # 'description': string
+
     # 'designation': string
+    designations = data['designation']
+    vectors['designation'] = pd.get_dummies(designations).to_numpy()
+
     # 'price': float
+    vectors['price'] = data['price'].to_numpy()
+
+
     # 'province': string
+    designations = data['designation']
+    vectors['designation'] = pd.get_dummies(designations).to_numpy()
+
     # 'region_1': string
+    r1s = data['region_1']
+    vectors['region_1'] = pd.get_dummies(r1s).to_numpy()
+
     # 'region_2': string
+    r2s = data['region_2']
+    vectors['region_2'] = pd.get_dummies(r2s).to_numpy()
+
     # 'taster_name': string
+    taster_names = data['taster_name']
+    vectors['taster_name'] = pd.get_dummies(taster_names).to_numpy()
+
     # 'taster_twitter_handle': string begin with @
+    taster_twitters = data['taster_twitter_handle']
+    vectors['taster_twitter_handle'] = pd.get_dummies(taster_twitters).to_numpy()
+
     # 'title': string year string (string)
+
     # 'variety': string
+    varieties = data['variety']
+    vectors['variety'] = pd.get_dummies(varieties).to_numpy()
+
     # 'winery': string
+    wineries = data['winery']
+    vectors['winery'] = pd.get_dummies(wineries).to_numpy()
+
     # 'points': integer
     vectors['points'] = data['points'].to_numpy()
+
+    # 'vintage': integer
+    vectors['vintage'] = data['vintage'].to_numpy()
 
     return vectors
 
@@ -182,7 +216,7 @@ if __name__ == '__main__':
     """
 
     data = get_wine_reviews_data()
-    # data = extract_wine_vintage(data)
+    #data = extract_wine_vintage(data)
     # print(data['vintage'])
     # data.hist(column='vintage', bins=10)
     # plt.show()
