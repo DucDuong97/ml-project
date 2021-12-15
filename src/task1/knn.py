@@ -309,19 +309,19 @@ def main(args):
     # print_samples(train_x, train_y)
 
     # # TODO: c
-    # knn_set = []
-    # for i in range(1, 11):
-    #     knn = KNN(k=i)
-    #     knn_set.append(knn)
-    # k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    # acc = []
-    # for i in range(0, 10):
-    #     acc.append(cross_validation(knn_set[i], train_x, train_y))
-    # plt.plot(k, acc)
-    # plt.xlabel('k')
-    # plt.ylabel('accuracy')
-    # plt.title('Accuracy for different k in KNN')
-    # plt.show()
+    knn_set = []
+    for i in range(1, 11):
+        knn = KNN(k=i)
+        knn_set.append(knn)
+    k = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    acc = []
+    for i in range(0, 10):
+        acc.append(cross_validation(knn_set[i], train_x, train_y))
+    plt.plot(k, acc)
+    plt.xlabel('k')
+    plt.ylabel('accuracy')
+    plt.title('Accuracy for different k in KNN')
+    plt.show()
 
     # # TODO: e
     best_k = 5  # replace when knowing the best k

@@ -28,12 +28,16 @@ if __name__ == '__main__':
             super(DNN, self).__init__()
             self.input_layer = input_layer
             self.output_layer = output_layer
-            self.fc1 = nn.Linear(input_layer, 256)
-            self.fc2 = nn.Linear(256, output_layer)
+            self.fc1 = nn.Linear(input_layer, 64)
+            self.fc2 = nn.Linear(64, 256)
+            self.fc3 = nn.Linear(256, output_layer)
+
 
         def forward(self, x):
             x = F.relu(self.fc1(x))
-            x = self.fc2(x)
+            x = F.relu(self.fc2(x))
+            #x = F.relu(self.fc3(x))
+            x = self.fc3(x)
             return x
 
         def clone(self):
@@ -45,13 +49,18 @@ if __name__ == '__main__':
             super(CNN, self).__init__()
             self.input_layer = input_layer
             self.output_layer = output_layer
-            self.conv1 = nn.Conv2d(input_layer, 64, kernel_size=3, stride=2, padding=1)
-            self.conv2 = nn.Conv2d(64, 15, kernel_size=3, stride=2, padding=1)
+            self.conv1 = nn.Conv2d(input_layer, 32, kernel_size=3, stride=2, padding=1)
+            self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
+            self.conv3 = nn.Conv2d(32, output_layer, kernel_size=3, stride=2, padding=1)
+
 
         def forward(self, x):
             x = x.view(-1, 1, 28, 28)
             x = F.relu(self.conv1(x))
             x = F.relu(self.conv2(x))
+            x = F.relu(self.conv3(x))
+
+
             x = F.avg_pool2d(x, 4)
             return x
 
@@ -64,9 +73,9 @@ if __name__ == '__main__':
     output_size = 15
     learning_rate = 0.01
     batch_size = 128
-    num_epoch = 4
+    num_epoch = 8
 
-    def cross_validation(model, X, Y, lr, num_epochs, m=4):
+    def cross_validation(model, X, Y, lr, num_epochs, m=2):
 
         report_printed = False
 
@@ -170,7 +179,7 @@ if __name__ == '__main__':
 
     def loss_batch(model, loss_func, xb, yb, opt=None):
         xb = xb.reshape(xb.shape[0], -1).float()  # shape 128 x 784
-        scores = model(xb)
+        scores = torch.squeeze(model(xb))
         softmax_scores = torch.nn.functional.softmax(scores)
         preds = torch.argmax(softmax_scores, dim=1)
         confs,_ = torch.max(softmax_scores, dim=1)
@@ -184,8 +193,8 @@ if __name__ == '__main__':
         return loss.item(), confs, xb, preds, yb, len(xb)
 
 
-    # cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
-    cross_validation(CNN(1, output_size), train_x, train_y, learning_rate, num_epoch)
+    cross_validation(DNN(input_size,output_size), train_x, train_y, learning_rate, num_epoch)
+    # cross_validation(CNN(1, output_size), train_x, train_y, learning_rate, num_epoch)
 
     # The code above is just given as a hint, you may change or adapt it.
     # Nevertheless, you are recommended to use the above loader with some batch size of choice.
