@@ -52,6 +52,8 @@ def projectionPCA(data):
     #TODO: 2b
     # remember to except the 'point' column
     # it should return an numpy of shape (n_samples, 1)
+    if data.shape[1] == 1:
+        return data
     pca = PCA(n_components=1)
     return pca.fit_transform(data)
 
@@ -65,8 +67,6 @@ def transform(data):
         else:
             print(result.shape, value.shape)
             result = np.concatenate((result, value), axis=1)
-    print(values)
-    print(result)
     return np.array(result)
 
 
@@ -112,15 +112,15 @@ if __name__ == '__main__':
     #     clf = RidgeRegressionBias()
     #     clf.fit(train_x, points)
     #     ax.plot(x, clf.predict(x), label='RRB')
-    #     # plot
+    #     # save plot
+    #     ax.legend()
     #     fig.tight_layout()
     #     plt.savefig(os.path.join(PATH, f'2b_{col}.pdf'))
     #     plt.close(fig)
 
 
     #TODO: 2d, should be smaller than 6.3
-
-    # print(f'Loss: {cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)}')
+    # cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)
 
     #TODO: 2f
     # forward_stepwise_selection(data, points)
