@@ -1,5 +1,8 @@
 import numpy as np
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
+import os
 import sys
 sys.path.append('../task1/')
 from wine_dataset import vectorized_data
@@ -42,8 +45,17 @@ class RidgeRegressionBias:
 def projection(data):
     #TODO: 2b
     # remember to except the 'point' column
-    # it should return an numpy 1d-array
-    return data
+    # it should return an numpy of shape (n_samples, 1)
+    return np.array([[item[0]] for item in data])
+
+def projectionPCA(data):
+    #TODO: 2b
+    # remember to except the 'point' column
+    # it should return an numpy of shape (n_samples, 1)
+    if data.shape[1] == 1:
+        return data
+    pca = PCA(n_components=1)
+    return pca.fit_transform(data)
 
 
 def transform(data):
@@ -79,18 +91,36 @@ if __name__ == '__main__':
 
     #TODO: 2b, 2c
     # for col, col_data in data.items():
-    #     train_x = projection(col_data)
+    #     # set up plot
+    #     fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    #     ax = plt.gca()
+    #     ax.set_xlabel('Projected Value')
+    #     ax.set_ylabel('Points')
+    #     ax.grid(linestyle='dashed')
+    #     # set up data
+    #     train_x = projectionPCA(col_data)
+    #     min_x = train_x.min()
+    #     max_x = train_x.max()
+    #     x = np.reshape(np.linspace(min_x,max_x), (50,1))
     #     # plot projected data
+    #     ax.scatter(train_x, points)
+    #     # plot clf.predict
     #     clf = RidgeRegression()
     #     clf.fit(train_x, points)
+    #     ax.plot(x, clf.predict(x), label='RR')
     #     # plot clf.predict
     #     clf = RidgeRegressionBias()
     #     clf.fit(train_x, points)
-    #     # plot clf.predict
+    #     ax.plot(x, clf.predict(x), label='RRB')
+    #     # save plot
+    #     ax.legend()
+    #     fig.tight_layout()
+    #     plt.savefig(os.path.join(PATH, f'2b_{col}.pdf'))
+    #     plt.close(fig)
+
 
     #TODO: 2d, should be smaller than 6.3
-
-    print(f'Loss: {cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)}')
+    # cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)
 
     #TODO: 2f
     # forward_stepwise_selection(data, points)
