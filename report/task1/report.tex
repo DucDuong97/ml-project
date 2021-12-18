@@ -1,92 +1,357 @@
 % !TeX spellcheck = en_GB
 \documentclass[11pt]{article}
-
-% Use the header
-\input{../header}
-
-% Add bib file that contains references
-\addbibresource{references.bib}
-
-\title{Machine Learning Project\\Task 1 Report Template}
-\author{Philipp Liznerski \\ liznerski@cs.uni-kl.de\and
-	Tobias Michels\\ t\_michels15@cs.uni-kl.de\and
-    Saurabh Varshneya\\ varshneya@cs.uni-kl.de}
+\usepackage{graphicx}
+\usepackage{listings}
+\title{Machine Learning Project\\Task 1}
+\author{Duy Nguyen Dinh \\ dinh@rhrk.uni-kl.de\and
+	Minh Duc Duong\\ duong@rhrk.uni-kl.de\and
+    ---\\ ---}
 \date{\today}
 \begin{document}
-	
+
 \maketitle
 
-\section{HOW-TO}
-The source code in LaTex for this template is located in the file named ``report.tex'' in the project repository. This template aims at less experienced \LaTeX users and shows how to achieve some common tasks that might come up as you are writing your report. We don't require you to use the template; if you want, you can simply delete it and start your report from scratch or use your own template files.
+\section{K Nearest Neighbor Classification}
 
-\subsection{Equations}
-We can easily typeset equations over multiple lines using the \verb|align| environment, however this will add a number to the end of every single line. The \verb|align*| environment on the other hand does not add numbers to any of the equations, but we can use the \verb|\numberthis| command at the end of a line to give only that line a number:
-\begin{align*}
-	2 + 2 &= 4\\
-	4 - 1 &= 3 \numberthis \label{eq:quickmaths}
-\end{align*}
-Now we can reference the second line as \cref{eq:quickmaths} using the \verb|\cref| command. Note that the \texttt{cleveref} package automatically determined that the type of object we wanted to reference is an equation and it therefore added the corresponding text. \Cref{eq:quickmaths} can also be referenced at the beginning of a sentence if we use the \verb|\Cref| command instead.
+\subsection{Classes of the data set}
+First we look into the data set, which will be used to fit the model as well as evaluate the accuracy of the model. The data consists of a total of 15000 images, each one was assigned with a specific label. Here is what each class in the data set looks like:
 
-\subsection{Ordered Lists}
-The \verb|enumitem| packages provides great flexibility in handling ordered lists, specifically \verb|enumerate| environments. Usually, items would be labelled by Arabic numbers and a period:
-\begin{enumerate}
-    \item This
-    \item is
-    \item a test.
-\end{enumerate}
-Perhaps you would like to have letters instead to replicate the task sheet and not quite as much empty space between the items? Not a problem:
-\begin{enumerate}[itemsep=0.0em, label=\alph*)]
-    \item This
-    \item is
-    \item a test.
-\end{enumerate}
-Spacing can also be adjusted globally, using the command \verb|\setlist{itemsep=<spacing>}|.
+\includegraphics{figures/1a_sample_class_0.pdf}
 
-\subsection{Figures \& Code}
-At some point, you might want to include plots or other graphics in your report. Usually, this is done by defining a figure that does not necessarily appear at the point in the document where it was defined; see \cref{fig:functions} for example. The python code that generated the figure is also included with the report template, please have a look at the file \verb|figures/make_figures.py|.
+\includegraphics{figures/1a_sample_class_1.pdf}
 
-\begin{figure}[t]
-    \begin{center}
-        \includegraphics{figures/example_plot}
-    \end{center}
-    \caption{A figure that shows the relationship between $y$ and $x$.}
-    \label{fig:functions}
-\end{figure}
+\includegraphics{figures/1a_sample_class_2.pdf}
 
-But what if you want to include and reference parts of your code in the report? In that case, you can use the \verb|lstlisting| environment, which enables you to typeset code directly in \LaTeX. The header file comes with an updated definition of the python language, which supports syntax highlighting for most parts of the language. Here is a small example:
-\begin{lstlisting}[language=iPython]
-def count_ones(bits: int) -> int:
-    # count number of ones in the binary representation 
-    # of the signed integer bits   
-    c = 0
-    v = bits
-    while v != 0:
-        c += 1
-        v &= v - 1  # This clears the least significant 1 bit
-        
-    return c
+\includegraphics{figures/1a_sample_class_3.pdf}
+
+\includegraphics{figures/1a_sample_class_4.pdf}
+
+\includegraphics{figures/1a_sample_class_5.pdf}
+
+\includegraphics{figures/1a_sample_class_6.pdf}
+
+\includegraphics{figures/1a_sample_class_7.pdf}
+
+\includegraphics{figures/1a_sample_class_8.pdf}
+
+\includegraphics{figures/1a_sample_class_9.pdf}
+
+\includegraphics{figures/1a_sample_class_10.pdf}
+
+\includegraphics{figures/1a_sample_class_11.pdf}
+
+\includegraphics{figures/1a_sample_class_12.pdf}
+
+\includegraphics{figures/1a_sample_class_13.pdf}
+
+\includegraphics{figures/1a_sample_class_14.pdf}
+
+There are 15 different classes in the data, which was counted from 0 to 14. Each of these classes may have an unique pattern: For example, Images in class 7 look like a letter 'T', which was rotated 90 degree to the left. Images in class 1 look like a letter 'q', which was rotated 90 degree to the right. It is important to note that through normal observation, it can be very challenging to recognize the pattern or the common properties of all images in the same class. Therefore it is necessary to create a classification, which can be used to determine the class of object that can not be done with simple human observation.
+
+\subsection{Implementation of KNN}
+
+A class was implemented to define every KNN-classifier. A classifier has many different properties:
+\begin{itemize}
+    \item k: The amount of images that we need to identify the label of calculating image
+    \item dist\_function: The method to calculate the distance between image
+    \item filter: Filter For the calculating image, which is required later into the task
+    \item return\_neighbor: Check if we want to save the k-nearest neighbors for each image, which is useful later to identify neighbors of misclassified images
+\end{itemize}
+
+\begin{lstlisting}[language=python, caption=KNN class]
+class KNN:
+    def __init__(self, k=5, dist_function=euclidean_distance
+            , filter=None, return_neighbor=False):
+        self.k = k
+        self.dist_function = dist_function
+        self.return_neighbor = return_neighbor
+        self.filter = filter
+
+    def fit(self, X, y):
+        if self.filter is not None:
+            X = np.array([convolve(i, self.filter) for i in X])
+        self.train_x = X
+        self.train_y = y
+
+    def predict(self, X):
+        if self.filter is not None:
+            X = np.array([convolve(i, self.filter) for i in X])
+        return [knn(x, self.train_x, self.k, self.train_y
+                , self.dist_function, self.return_neighbor) for x in X]
 \end{lstlisting}
 
-Instead of writing the code directly in the \LaTeX file, you can also ``import'' it from the original source file with the \verb|\lstinputlisting| command. For example, \cref{lst:figsource} shows an excerpt from the source code file \verb|figures/make_figures.py| that was used to generate \cref{fig:functions}.
 
-Note how the code about counting bits was split up between two separate pages. This is expected behaviour, since the normal text mode works like a paragraph of text, which can obviously be split. If you don't want that behaviour, use the optional \verb|float| parameter that turns the listing into a floating object, similar to a figure. For example, \cref{lst:figsource} uses this parameter and is not split between two pages, but at the same time the source code does not appear in the exact position where it was included in the \LaTeX file.
+The fit method will get the data as "train data", so we will calculate the distance between the images, which we need to predict the label, with these "train-images". The method predict will call the function knn, which calculate the label for each image in the set. The algorithm of this function was demonstrated in the task sheet and the implementation can be found in knn.py
 
-\lstinputlisting[float=tb, language=iPython, firstline=43, lastline=59, caption={Source code that generated \cref{fig:functions}.}, label=lst:figsource]{figures/make_figures.py}
+\subsection{m-fold cross validation on different k}
 
-\subsection{TODO Notes}
-\todo[inline]{TODO: Remove this TODO note}
-Notes and reminders like the one above can by typeset with the \verb|\todo[inline]{<text>}| command\todo{Mention that notes can also be added next to the text area}. This is especially helpful if you are collaborating with others, since you can use this to remind everyone of work that still needs to be done.
+We implemented m-fold cross validation and the Euclidean distance functions as described in the task sheet. As the sheet required, we run 5 fold cross validation on the entire set of 15000 images with k vary from 1 to 10.
 
-\subsection{Citing References}
-If you want to use material created by someone else in your report, it is mandatory that you cite it properly. This is even more important if you want to refer to somebody else's ideas. Luckily, \LaTeX and the internet can help you with that, making your life a lot easier in that regard. Ideally, you would only want to cite papers that were published either in a peer-reviewed journal or a conference's proceedings. For example, you might have read the OpenAI blog post about \emph{adversarial examples}\footnote{\url{https://openai.com/blog/adversarial-example-research/}} and you want to pick up some of the ideas presented there. Since the blog post lists the relevant papers, you can search for them in an engine like \emph{Google Scholar} that lets you export citations as \emph{BibTeX} entries. After pasting the entry in your references file, you can cite them in your text by simply using the \verb|\autocite| command: \autocite{papernot2017practical}.
+\includegraphics{figures/1c_knn_acc_k.pdf}
 
-Of course, finding a peer-reviewed paper for the ideas in a blog post might not always be possible. In such a case, you can also cite the blog post directly using an \verb|@online| entry in the bib file \autocite{goodfellow2017attacking}. 
+The peak of accuracy is achieved with k=5. Therefore all of the classifier will have k=5 from now on.
+
+\subsection{Is the best current k a good choice?}
+
+While it is a good indicator to choose the k, which has the best accuracy at the moment, it may not the best choice to test on new fresh images. As more images will be used to fit the classifier, new images come with many unseen properties or the distribution of classes can be changed. If we use the approach KNN, it should be a good practice to test out on different values of k, especially since k is not the only factor decides the accuracy of the model (for example the amount, quality and distribution of data also matters).
+
+\subsection{KNN with different distance metric}
+
+To improve the speed of the program, we prefer to use built-in functions from Numpy and Scipy to define the distance functions rather than implement it ourself.
+
+\begin{lstlisting}[language=python, caption=distance functions]
+def euclidean_distance(a, b):
+    return np.linalg.norm(np.squeeze(a - b))
+
+def manhattan_distance(a, b):
+    return np.linalg.norm(np.squeeze(a - b), 1)
+
+def minkowki_distance(p, q):
+    return distance.minkowski(p.flatten(), q.flatten())
+\end{lstlisting}
+
+The Euclidean distance function is a specific case of Minkowski distance function with the scalar of 2. This time we test the accuracy of Euclidean metric compare to Manhattan metric (Minkowski with scalar of 1) and Minkowski metric with scalar of 3.
+
+\includegraphics{figures/1e_knn_acc_dist.pdf}
+
+The result shown, the accuracy of Euclidean metric and Minkowski metric are similar and Manhattan metric has a 6\% lower in accuracy.
+
+\subsection{Feature Engineering}
+
+The convolutional operation is implemented as follows. We assume that the images are only in grayscale, the size of the dimension C is 1.
+
+\begin{lstlisting}[language=python, caption=convolve function]
+def convolve(x, filter):
+    x = np.squeeze(x)
+    x_h, x_w = x.shape
+    filter = np.flipud(np.fliplr(filter))
+    filter_h, filter_w = filter.shape
+    res_h = x_h - filter_h + 1
+    res_w = x_w - filter_w + 1
+    res = np.zeros((res_h, res_w))
+    for i in range(res_h):
+        for j in range(res_w):
+            res[i, j] = (filter * x[i: i + filter_h, j: j + filter_w]).sum()
+    return res
+\end{lstlisting}
+
+\subsection{Experiment with filters}
+
+With the implemented convolutional operation, we test the classifier in 5 different cases (without filter, blur filter and edge filter, the combination of 2 filter, blur filter with built-in convovle2d function of scipy) using 5-fold cross validation.
+
+\includegraphics{figures/1g_knn_acc_filter.pdf}
+
+Blur filter improve our KNN-classifier a little while we have a significantly drop in accuracy with edge detection approach. The combination produces an average result of those. The accuracy isn't changed when using built-in convolve2d function from scipy, only that the built-in function is faster.
 
 
-\subsection{Tables}
-The following webpage is an excellent resource to learn to make well-formatted tables in LaTeX using the \emph{booktabs} package \url{https://jdhao.github.io/2019/08/27/latex_table_with_booktabs/}.
+\subsection{Weight KNN}
+
+Now we assigned weight into each neighbor, which is inversely proportional to the distance. This means the closer the neighbor to the test image, the more impact it will make to the result of the prediction. We modify our knn function with a new added parameter inverse\_modifier to calculate the weight of each neighbor (inverse\_modifier divided by distance)
+
+\includegraphics{figures/1h_knn_acc_algo.pdf}
+
+We find very small increment in accuracy with Weight KNN.
+
+\subsection{Misclassified samples}
+
+As the task sheet required, for at least three different distance measures and features obtained from two different filters, we plot the nearest neighbors to 5 random misclassifed samples. To fulfill the requirement, we plot 3 different cases.
+
+The first case is with a classifier with Euclidean distance metric and blur filter:
+
+\includegraphics{figures/1i[1]_miss_classified_0.pdf}
+
+\includegraphics{figures/1i[1]_miss_classified_1.pdf}
+
+\includegraphics{figures/1i[1]_miss_classified_2.pdf}
+
+\includegraphics{figures/1i[1]_miss_classified_3.pdf}
+
+\includegraphics{figures/1i[1]_miss_classified_4.pdf}
+
+The second case is with a classifier with Manhattan distance metric and blur filter:
+
+\includegraphics{figures/1i[2]_miss_classified_0.pdf}
+
+\includegraphics{figures/1i[2]_miss_classified_1.pdf}
+
+\includegraphics{figures/1i[2]_miss_classified_2.pdf}
+
+\includegraphics{figures/1i[2]_miss_classified_3.pdf}
+
+\includegraphics{figures/1i[2]_miss_classified_4.pdf}
+
+The third case is with a classifier with Manhattan distance metric and edge filter:
+
+\includegraphics{figures/1i[3]_miss_classified_0.pdf}
+
+\includegraphics{figures/1i[3]_miss_classified_0.pdf}
+
+\includegraphics{figures/1i[3]_miss_classified_0.pdf}
+
+\includegraphics{figures/1i[3]_miss_classified_0.pdf}
+
+\includegraphics{figures/1i[3]_miss_classified_0.pdf}
+
+Many misclassified images has a very close pattern compare to their neighbors but the result of the predictions are still incorrect. Because we have many images of different classes that look identical to each other, many was predicted with the wrong label.
+
+\subsection{Conclusion}
+
+We implemented the algorithm for K-nearest-neighbors, which calculates the distance between the current image and other fitted images in the classifier. The classifier uses one of three different metrics, based on the scalar of Minkowski distance function. The accuracy of each model is determined by m-Fold-Cross-Validation. We also implemented convolution operation with filter. Weight-KNN does not count the number of each labels from k-nearest neighbors but the closer the neighbor to the calculating image, the more impact it will make to the prediction. Lastly we shown the misclassified samples from different models.
+
+Most of the classifiers use k=5 as this value yield the best accuracy from range of 1 to 10.
+
+
+
+\section{Deep Neural Network}
+\subsection{Neural Network Term}
+
+Before implementing, we need to present some definitions related to neural network.
+\begin{itemize}
+    \item Activation function: Activation functions define the output of each neuron in the network, they help the network use the important information and suppress the irrelevant data points, given (set of) input. Some of the functions are Sigmoid, ReLU
+    \item Loss function: Loss function is the function that calculate the prediction error of the model, such as Mean Square Error, Cross Entropy...
+    \item Parameter is specifications from the model, which can be estimated from the data (e.g. weight, bias). Hyper-parameter is specifications that there are no clear way to optimize and need to manually changed to find the best values. (e.g. k in KNN classifier, learning rate,...)
+    \item Optimizer: Algorithm/Method, combined with a loss function, used to update the parameters of the network (for examples: weight, bias) in order to minimize that loss function. Examples of optimizers are Adam, Stochatical Gradient Descent...
+    \item Epoch: Training all the given data in one cycle.
+    \item Over-fitting: an error that occurs when a function is too closely aligned to a limited set of data points. As a result, the model is useful in reference only to its initial data set, and not to any other data sets. And underfitting is just the reversed way of overfitting.
+    \item Training set: Training set is a set a data, which is used to train a model. Normally given as a pair of input and the actual output.
+    \item Test set: Test set is a set of data, which is used to test how good (accurate) the current model is.
+    \item Validation set: Validation set is a set of data which is used to tune the hyper-parameters of the model.
+\end{itemize}
+
+\subsection{Implementing Deep Neural Network}
+
+As for the given task we implemented a linear neural network (layer: 784, 256, 64, 15).
+
+\begin{itemize}
+    \item learning\_rate = 0.001
+    \item batch\_size = 128
+    \item num\_epoch = 10
+    \item Loss function: Cross Entropy
+    \item Optimizer: Adam
+\end{itemize}
+
+\subsection{Changing Architecture Specification}
+
+As we found our best number of layers and neurons for each layer. We compare our current CNN with another but with different loss function.
+
+\includegraphics{figures/2c[1]_dnn_loss_epoch.pdf}
+
+After 8 epochs, the accuracy of each model peaks and close to each other.
+
+\subsection{Confusion Matrix and Confidence}
+
+Confusion Matrix for our current CNN
+
+\includegraphics{figures/2d_confusion_matrix.pdf}
+
+10 most unconfident each class:
+
+\includegraphics{figures/2d_unconfident_imgs_class_0.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_1.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_2.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_3.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_4.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_5.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_6.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_7.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_8.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_9.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_10.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_11.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_12.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_13.pdf}
+
+\includegraphics{figures/2d_unconfident_imgs_class_14.pdf}
+
+10 most confident each class:
+
+\includegraphics{figures/2d_confident_imgs_class_0.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_1.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_2.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_3.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_4.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_5.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_6.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_7.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_8.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_9.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_10.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_11.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_12.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_13.pdf}
+
+\includegraphics{figures/2d_confident_imgs_class_14.pdf}
+
+As expected, for unconfident images in each class, they does not look identical or share a common pattern with each other. The opposite applies for confident images.
+
+\subsection{KNN Version}
+
+In this task, we run both normal and KNN versions with 4-fold validation. The accuracy of KNN version is just 1\% higher, but way more costly than the normal, since the KNN runs extremely slow by large dadasets. 
+
+\includegraphics{figures/2e_dnn.pdf}
+
+\subsection{Batch Normalization}
+
+Batch Normalization is implemented as follows:
+\begin{lstlisting}[language=python]
+class BatchNorm(nn.Module):
+        def __init__(self, C, momentum=0.9):
+            super().__init__()
+            self.C = C
+            self.momentum=momentum
+            self.running_mean = torch.zeros(C)
+            self.running_var = torch.ones(C)
+            self.weight = nn.Parameter(torch.randn(C)/math.sqrt(C))
+            self.bias = nn.Parameter(torch.zeros(C))
+
+        def forward(self, X):
+            if self.training:
+                mean = X.mean([0,2,3])
+                var = X.var([0,2,3])
+                self.running_mean = self.running_mean*self.momentum + mean*(1-self.momentum)
+                self.running_var = self.running_var*self.momentum + var*(1-self.momentum)
+            else:
+                mean = self.running_mean
+                var = self.running_var
+
+            m = mean.view([1, self.C, 1, 1]).expand_as(X)
+            v = var.view([1, self.C, 1, 1]).expand_as(X)
+            w = self.weight.view([1, self.C, 1, 1]).expand_as(X)
+            b = self.bias.view([1, self.C, 1, 1]).expand_as(X)
+            out = w * (X - m)/torch.sqrt(v) + b
+            return out
+\end{lstlisting}
+
+There is no hug differences when Batch Normalization is applied. We put a Batch Normalization layer before each Convolution layer.
+
+\includegraphics{figures/2f_dnn.pdf}
 
 
 % Print references
-\printbibliography
 \end{document}
