@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 
 from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
+
 # Change this to the path where you want to download the dataset to
 DEFAULT_ROOT = '../../data/wine'
 
@@ -112,6 +113,8 @@ def plot_histograms(data, columns):
                     data[label].value_counts().head(columns[label]).plot.bar()
                 else:
                     data[label].value_counts().plot.bar()
+            plt.xticks(fontsize=15)
+            plt.yticks(fontsize=10)
             plt.show()
 
         # fig.tight_layout()
@@ -319,9 +322,9 @@ if __name__ == '__main__':
 
     data = get_wine_reviews_data()
     data = extract_wine_vintage(data)
-    data = data_preprocessing(data)
+    # data = data_preprocessing(data)
 
-    # print(data.isna().sum())
+    print(data.isna().sum())
     # print(data.groupby(['province','country']).count())
     # data.boxplot('points','designation')
     # plt.show()
@@ -329,4 +332,16 @@ if __name__ == '__main__':
 
     # transform(data,{})
     # print(compute_statistics(data))
-    # plot_histograms(data, {"country": 5, "price": 3, "points": 3})
+    plot_histograms(data, {"country": 20,
+                           "designation": 20,
+                           "price": 3,
+                           "points": 3,
+                           "province":20,
+                           "region_1":20,
+                           "region_2": 20,
+                           "taster_name":20,
+                           "taster_twitter_handle": 20,
+                           "variety": 20,
+                           "winery": 20,
+                           "vintage": 3
+                           })
