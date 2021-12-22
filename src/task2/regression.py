@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
@@ -58,7 +60,10 @@ def projectionPCA(data):
     return pca.fit_transform(data)
 
 
-def transform(data):
+def transform(data, filter=[]):
+    if len(filter) > 0:
+        data = { filter_column : data[filter_column] for filter_column in filter }
+
     values = list(data.values())
     result = None
     for value in values:
@@ -76,8 +81,22 @@ def mean_sqrt_err(clf, X,Y):
 
 
 def forward_stepwise_selection(data, points, k=5):
-    subset = [] # list of feature name
-    #TODO:
+    print("Begin forward stepwise selection")
+    subset = [] # list of feature names and MSE
+    for k in range(k):
+        min_mse = math.inf
+        significant_feature = None
+        for column in data:
+            if column not in subset:
+                temp_set = subset[:]
+                temp_set.append(column)
+                print(f'Working with {column}, the current set is {temp_set}')
+                current_mse = cross_validation(RidgeRegression(), transform(data, temp_set), points, metric=mean_sqrt_err)
+                if current_mse < min_mse:
+                    min_mse = current_mse
+                    significant_feature = column
+        subset.append(significant_feature)
+        print(f'k={k}: Feature: {significant_feature} with the mse of {min_mse}')
     return subset
 
 
@@ -120,7 +139,8 @@ if __name__ == '__main__':
 
 
     #TODO: 2d, should be smaller than 6.3
-    # cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)
+    cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)
+    #forward_stepwise_selection(data, points, k=5)
 
     #TODO: 2f
     # forward_stepwise_selection(data, points)
