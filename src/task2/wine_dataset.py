@@ -133,6 +133,11 @@ def compute_statistics(data):
             stats[f'{label}_average'] = sum(values) / len(values)
     return stats
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                             #
+#   DATA PROCESSING.                                          #
+#                                                             #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 def data_preprocessing(data):
     print('----------------------------------')
@@ -160,6 +165,9 @@ def data_preprocessing(data):
 
     data.dropna(thresh=data.shape[1]-3, inplace=True)
 
+    encoder = ce.TargetEncoder(cols='country')
+    data['country'] = encoder.fit_transform(data['country'],data['points'])
+
     print('..................................')
     print('end data preprocessing')
     print()
@@ -169,18 +177,11 @@ def data_preprocessing(data):
     print('----------------------------------')
     return data
 
-
-def read_corpus(corpuses, tokens_only=False):
-    for i,corpus in enumerate(corpuses):
-        # print(corpus)
-        corpus = gensim.parsing.preprocessing.remove_stopwords(corpus)
-        # print(corpus)
-        tokens = gensim.utils.simple_preprocess(corpus)
-        if tokens_only:
-            yield tokens
-        else:
-            yield gensim.models.doc2vec.TaggedDocument(tokens, [i])
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                             #
+#   DATA VECTORIZING.                                         #
+#                                                             #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 def transform(data, stats):
     print('----------------------------------')
@@ -197,7 +198,8 @@ def transform(data, stats):
     # countries_bin = encoder.fit_transform(countries)
     # vectors['country'] = countries_bin.to_numpy()
 
-    vectors['country'] = pd.get_dummies(countries).to_numpy()
+    # vectors['country'] = pd.get_dummies(countries).to_numpy()
+    vectors['country'] = np.reshape(data['country'].to_numpy(),(data.shape[0],1))
 
     print('begin transform provinces')
     province = data['province']
@@ -288,6 +290,18 @@ def transform(data, stats):
     return vectors
 
 
+def read_corpus(corpuses, tokens_only=False):
+    for i,corpus in enumerate(corpuses):
+        # print(corpus)
+        corpus = gensim.parsing.preprocessing.remove_stopwords(corpus)
+        # print(corpus)
+        tokens = gensim.utils.simple_preprocess(corpus)
+        if tokens_only:
+            yield tokens
+        else:
+            yield gensim.models.doc2vec.TaggedDocument(tokens, [i])
+
+
 def vectorized_data():
     data = get_wine_reviews_data()
     data = extract_wine_vintage(data)
@@ -295,6 +309,11 @@ def vectorized_data():
     stats = compute_statistics(data)
     return transform(data, stats)
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                             #
+#   MAIN.                                                     #
+#                                                             #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 if __name__ == '__main__':
     # print("Download data")
