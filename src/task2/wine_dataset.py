@@ -334,8 +334,8 @@ if __name__ == '__main__':
     # print(compute_statistics(data))
     plot_histograms(data, {"country": 20,
                            "designation": 20,
-                           "price": 3,
-                           "points": 3,
+                           "price": 80,
+                           "points": 10,
                            "province":20,
                            "region_1":20,
                            "region_2": 20,
@@ -343,5 +343,5 @@ if __name__ == '__main__':
                            "taster_twitter_handle": 20,
                            "variety": 20,
                            "winery": 20,
-                           "vintage": 3
+                           "vintage": 10
                            })
