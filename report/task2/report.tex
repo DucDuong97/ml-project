@@ -14,14 +14,14 @@
 \section{Data Pre-processing}
 
 \subsection{Extract vintage from "title" column}
-As the task sheet requires, we need to extract the vintage from the title column. First it is necessary to identify how would vintage appears in the title. Because they indicate a specific year, they appear mostly as a concatenation of 4 digits. The process can be done by searching for numbers using regular expression ([0-9][0-9][0-9][0-9]) in each entry of title column. This is however not enough for the exaction as there can be the case, where the 4 digits do not make any sense of year (for example: 1000 or 9000 as these should not be a reasonable years for vintage). Thus, we add some constrains with the expectation of getting more meaningful numbers for the vintage. The extracted number first should be in between 1800 and 2022 because it makes more sense that all wines were made in this year range. Also there are time when we could extracted 2 or more years in the same title entry. Here we focus on the exception with 2 different numbers. The entry 2262 in the data has 2 different years (1637 and 2002). Our implementation is to extract the maximum number as vintage, which suits this entry well because 1637 represents the establish year of the facility and 2002 is the actual wine year.
+As the task sheet requires, we need to extract the vintage from the title column. First it is necessary to identify how would vintage appears in the title. Because they indicate a specific year, they appear mostly as a concatenation of 4 digits. The process can be done by searching for numbers using regular expression ([0-9][0-9][0-9][0-9]) in each entry of title column. This is however not enough for the exaction as there can be the case, where the 4 digits do not make any sense of year (for example: 1000 or 9000 as these should not be a reasonable years for vintage). Thus, we add some constraints with the expectation of getting more meaningful numbers for the vintage. The extracted number first should be in between 1800 and 2022 because it makes more sense that all wines were made in this year range. Also there are time when we could extracted 2 or more years in the same title entry. Here we focus on the exception with 2 different numbers. The entry 2262 in the data has 2 different years (1637 and 2002). Our implementation is to extract the maximum number as vintage, which suits this entry well because 1637 represents the establish year of the facility and 2002 is the actual wine year.
 
 It is important to keep in mind that the extraction may not absolute accurate because the idea for the extraction of vintage comes through the observation of the data frame. For the better result, data should be consistent with a recognizable pattern.
 
 \subsection{Histogram}
 Plotting is one way to get an overview of the values of each column. There will be two types of plotting depend on the value type of columns. For numeric types (Integer or Float), we plot histograms which show the range and the distribution of values. For string type, we plot the counts of each unique values.
 
-All histogram for numeric columns are plotted with group of 3 bins. Because there can be too many unique values to plot, we decided to plot the counts of top 20 unique values for string columns. We also exclude description and title columns from the plot result with the assumption that each entry of these columns are unique and this makes plotting for these columns serves no purpose.
+Because there can be too many unique values to plot, we decided to plot the counts of top 20 unique values for string columns. We also exclude description and title columns from the plot result with the assumption that each entry of these columns are unique and this makes plotting for these columns serves no purpose.
 
 Country
 
@@ -31,11 +31,11 @@ Designation
 
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_designation.png}
 
-Points
+Points (bin=10)
 
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_points.png}
 
-Price
+Price (bin=80)
 
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_price.png}
 
@@ -67,7 +67,7 @@ Winery
 
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_winery.png}
 
-Vintage
+Vintage (bin=10)
 
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_vintage.png}
 
@@ -112,7 +112,21 @@ We realized that \textbf{taster_twitter_handle} data is identical with taster_na
 
 \subsection{f}
 
+When new type of wine is added, we still need some constraints to check if this is actual new type. For example, with a specific implementation, "US", "USA" and "America" in column country are totally different. This means we need a way to standardize the values for each column and different input values with the same context should be grouped together. When we reach a specific number of newly added row, the description column should be pre-processed again, as the description column relates to other columns best and use training algorithm to vectorize values.
+\section{Ridge Regression}
 
+\subsection{Forward step selection}
+We want to find the most impact features in the data and forward step selection is one of the options. We first start with an empty model with no fitted data, then we find the best feature to add to the model. This can be done base on the mean squared errors when we add each available feature to the model. We keep adding features into the model until we reach a certain number k.
+
+As for the result of the given wine data:
+\begin{itemize}
+    \item k=0: Feature: description with the mse of 596.297918013402
+    \item k=1: Feature: country with the mse of 5.609319585427947
+    \item k=3: Feature: province with the mse of 4.878210024539221
+    \item k=4: Feature: taster\_name with the mse of 4.75865561866921
+\end{itemize}
+
+The most significant features are the one with many unique values across the data (description, country) because the column with more unique values will contain better relations with other column. On the other hand, if most row cluster into a certain value or range of values (price/points/vintage), this makes prediction harder because the values do not hold any meaning for a good estimation (as completely different wine can have the same points)
 
 % Print references
 \end{document}

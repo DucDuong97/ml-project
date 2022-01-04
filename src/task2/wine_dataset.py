@@ -380,17 +380,17 @@ if __name__ == '__main__':
     # print(data[data["country"].isnull()][['province','region_1','region_2','designation']])
 
     # transform(data,{})
-    compute_statistics(data)
-    # plot_histograms(data, {"country": 20,
-    #                        "designation": 40,
-    #                        "price": 3,
-    #                        "points": 3,
-    #                        "province":20,
-    #                        "region_1":20,
-    #                        "region_2": 20,
-    #                        "taster_name":20,
-    #                        "taster_twitter_handle": 20,
-    #                        "variety": 20,
-    #                        "winery": 20,
-    #                        "vintage": 3
-    #                        })
+    # print(compute_statistics(data))
+    plot_histograms(data, {"country": 20,
+                           "designation": 20,
+                           "price": 80,
+                           "points": 10,
+                           "province":20,
+                           "region_1":20,
+                           "region_2": 20,
+                           "taster_name":20,
+                           "taster_twitter_handle": 20,
+                           "variety": 20,
+                           "winery": 20,
+                           "vintage": 10
+                           })
