@@ -3,12 +3,14 @@ import math
 import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+from sklearn.model_selection import KFold
 
 import os
 import sys
+import time
 sys.path.append('../task1/')
-from wine_dataset import vectorized_data
 from knn import cross_validation
+from wine_dataset import vectorized_data, get_wine_reviews_data
 from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
 
@@ -34,7 +36,7 @@ class RidgeRegressionBias:
 
     def fit(self, X, y):
         data_size = len(y)
-        self.bias = np.mean(y)
+        self.bias = 1
         X = np.c_[X, np.ones(data_size)*self.bias]
         self.rr.fit(X,y)
 
@@ -70,13 +72,11 @@ def transform(data, filter=[]):
         if result is None:
             result = value
         else:
-            print(result.shape, value.shape)
             result = np.concatenate((result, value), axis=1)
     return np.array(result)
 
 
 def mean_sqrt_err(clf, X,Y):
-    # print(clf.predict(X))
     return np.sum(np.power(clf.predict(X) - Y,2)) / len(Y)
 
 
