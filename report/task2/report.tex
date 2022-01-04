@@ -91,7 +91,25 @@ We also retrieve the number of null entries for each column:
 \end{itemize}
 
 \subsection{Statistics}
+
+
+
 \subsection{Data Transformation}
+
+In this task, we transform each column individually and force each output to be a 2d matrix. We set the threshold of missing data on each row to 2. It means for example, a row that misses the country and province will be removed from the dataset.
+
+Data from the columns will be classified into 3 types: numerical, categorical and text data.
+
+Numerical data includes \textbf{price}, \textbf{vintage}, \textbf{points}. For this data type, we reshape it from an 1d-array to a (N,1) matrix. Missing data will be fulfilled with the mean of the correspondent column. We will observe their standard deviation to assess the impact on the related weight of the model.
+
+Only the \textbf{description} column includes text data. First, texts will be tokenized and stop words and other with frequency less than 2 will be filtered out. Then a dictionary is created by the remaining words. We use Word2Vec model from the library Gensim to vectorize the description string. Next, the model will be trained for 20 epochs. Finally, the model transform each description into a vector with size 50.
+
+The rest are categorical data. We can see also a set of hierachical type: {country, province, region_1, region_2}. There are plenty of encoding technics for that type of data. In this project we use mainly three methods: Sum encoding, Binary encoding, Target encoding. Sum encoding will be applied to the columns with a small set of categories like \textbf{taste_name}, \textbf{province}. It is an efficient method which represent the nature of categorical variable's encoding, but memory and runtime are the trade-off. In Sum encoding, missing data will be set to a vector of minus one. For columns that have a huge amount of categories and a small impact on the target column, we use binary encoding to reduce the features. The involved columns include \textbf{region_1} (1229 categories to 11 binary features), \textbf{winery} (16757 to 15), \textbf{designation} (37979 to 16), \textbf{variety} (707 to 10). We apply target encoding on \textbf{country}. Target encoding would lead to overfitting, therefore we use the version with additive smoothing. In this encoding, missing data will be set to the general mean.
+
+We realized that \textbf{taster_twitter_handle} data is identical with taster_name, when it exists. So, we decide to transform it into a boolean feature, expresses that whether the taster has a taster account. the tranformed data has only one variable, the feature correlation between \textbf{taster_name} and \textbf{taster_twitter_handle} is eliminated.
+
+\textbf{title} is just the concatination of designation, vintage, variety, winery. Therefore, we ignore this column.
+
 \subsection{f}
 
 
