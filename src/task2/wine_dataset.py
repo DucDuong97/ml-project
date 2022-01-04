@@ -102,7 +102,7 @@ def extract_wine_vintage(data):
 
 def plot_histograms(data, columns):
     for label, content in data.iteritems():
-        # fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+        fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
         if label in columns:
             values = content.tolist()
             values = [x for x in values if str(x) != 'nan']
@@ -113,24 +113,39 @@ def plot_histograms(data, columns):
                     data[label].value_counts().head(columns[label]).plot.bar()
                 else:
                     data[label].value_counts().plot.bar()
-            plt.xticks(fontsize=15)
+            plt.xticks(fontsize=10)
             plt.yticks(fontsize=10)
-            plt.show()
 
-        # fig.tight_layout()
-        # plt.savefig(os.path.join(PATH, f'1c_histogram_of_{colName}.pdf'))
-        # plt.close(fig)
+        fig.tight_layout()
+        plt.savefig(os.path.join(PATH, f'1c_histogram_of_{label}.pdf'))
+        plt.close(fig)
 
 
 def compute_statistics(data):
+    print('----------------------------------')
+    print('BEGIN COMPUTING STATS')
     stats = {}
     for label, content in data.iteritems():
         values = content.tolist()
-        values = [x for x in values if str(x) != 'nan']
+        values = np.array([x for x in values if str(x) != 'nan'])
         if isinstance(values[0], (int, float)):
-            stats[f'{label}_minimum'] = min(values)
-            stats[f'{label}_maximum'] = max(values)
-            stats[f'{label}_average'] = sum(values) / len(values)
+            print('.')
+            stats[f'{label}_minimum'] = np.min(values)
+            print(f'{label}_minimum = {stats[f"{label}_minimum"]}')
+            stats[f'{label}_maximum'] = np.max(values)
+            print(f'{label}_maximum = {stats[f"{label}_maximum"]}')
+            stats[f'{label}_mean'] = np.mean(values)
+            print(f'{label}_mean = {stats[f"{label}_mean"]}')
+            stats[f'{label}_median'] = np.median(values)
+            print(f'{label}_median = {stats[f"{label}_median"]}')
+            stats[f'{label}_std'] = np.std(values)
+            print(f'{label}_std = {stats[f"{label}_std"]}')
+            print('.............................')
+    # label = 'country'
+    # content = data[[label,'points']]
+    # print(content.groupby(label).std()['points'].mean())
+    print('END COMPUTING STATS')
+    print('----------------------------------')
     return stats
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -141,12 +156,21 @@ def compute_statistics(data):
 
 def data_preprocessing(data):
     print('----------------------------------')
-    print('begin data preprocessing')
-    print()
+    print('BEGIN DATA PREPROCESSING')
+    print(data)
     data_size = data.shape[0]
     print(f'Data size: {data_size}')
     print(data.isna().sum())
+    print('.........................')
 
+    # handle rare data
+    print('REMOVING RARE CATEGORICAL DATA')
+    clear_rare_data(data, 'province')
+    # clear_rare_data(data, 'region_1')
+    clear_rare_data(data, 'variety')
+    print('.........................')
+
+    # handle missing data
     imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
     imputer = imputer.fit(data[['price']])
     data['price'] = imputer.transform(data[['price']])
@@ -156,20 +180,17 @@ def data_preprocessing(data):
     imputer = imputer.fit(data[['vintage']])
     data['vintage'] = imputer.transform(data[['vintage']])
 
-    std = StandardScaler()
-    data[['price','vintage']] = std.fit_transform(data[['price','vintage']])
-
     taster_twitters = data['taster_twitter_handle'].fillna(0)
     taster_twitters = [(0 if item == 0 else 1) for item in taster_twitters]
     data['taster_twitter_handle'] = taster_twitters
 
+    # standardize data
+    std = StandardScaler()
+    data[['price','vintage']] = std.fit_transform(data[['price','vintage']])
+
     data.dropna(thresh=data.shape[1]-3, inplace=True)
 
-    encoder = ce.TargetEncoder(cols='country')
-    data['country'] = encoder.fit_transform(data['country'],data['points'])
-
-    print('..................................')
-    print('end data preprocessing')
+    print('END DATA PREPROCESSING')
     print()
     data_loss_per = (data_size - data.shape[0])*100 / data_size
     print('Data Loss Percent: {:.2f}%'.format(data_loss_per))
@@ -177,15 +198,25 @@ def data_preprocessing(data):
     print('----------------------------------')
     return data
 
+def clear_rare_data(data, label, min_count=2):
+    print('.')
+    content = data[label]
+    old_distinct_count = content.value_counts().count()
+    print(f'{label} distinct count: {old_distinct_count}')
+    content.mask(content.map(content.value_counts()) < min_count, 'Other',inplace=True)
+    new_distinct_count = content.value_counts().count()
+    print(f'Removed amount: {old_distinct_count - new_distinct_count}')
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                             #
 #   DATA VECTORIZING.                                         #
 #                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-def transform(data, stats):
+def transform(data):
     print('----------------------------------')
-    print('begin data vectorizing')
+    print('BEGIN DATA TRANSFORMING')
     # TODO: 1e
     # write report for it
     vectors = {}
@@ -193,81 +224,37 @@ def transform(data, stats):
     ###################################################
 
     print('begin transform country')
-    countries = data['country']
-    # encoder = ce.BinaryEncoder(cols=['country'])
-    # countries_bin = encoder.fit_transform(countries)
-    # vectors['country'] = countries_bin.to_numpy()
-
-    # vectors['country'] = pd.get_dummies(countries).to_numpy()
-    vectors['country'] = np.reshape(data['country'].to_numpy(),(data.shape[0],1))
+    vectors['country'] = sum_encode(data, 'country')
 
     print('begin transform provinces')
-    province = data['province']
-    # encoder = ce.BinaryEncoder(cols=['province'])
-    # province_bin = encoder.fit_transform(province)
-    # vectors['province'] = province_bin.to_numpy()
-    vectors['province'] = pd.get_dummies(province).to_numpy()
+    vectors['province'] = binary_encode(data, 'province')
 
     print('begin transform region_1')
-    region_1 = data['region_1']
-    encoder = ce.BinaryEncoder(cols=['region_1'])
-    region_1_bin = encoder.fit_transform(region_1)
-    vectors['region_1'] = region_1_bin.to_numpy()
+    vectors['region_1'] = target_encode(data, 'region_1', 'points', m=0.5)
 
     print('begin transform region_2')
-    region_2 = data['region_2']
-    encoder = ce.BinaryEncoder(cols=['region_2'])
-    region_2_bin = encoder.fit_transform(region_2)
-    vectors['region_2'] = region_2_bin.to_numpy()
+    vectors['region_2'] = sum_encode(data, 'region_2')
 
     print('begin transform winery')
-    winery = data['winery']
-    encoder = ce.BinaryEncoder(cols=['winery'])
-    winery_bin = encoder.fit_transform(winery)
-    vectors['winery'] = winery_bin.to_numpy()
+    vectors['winery'] = target_encode(data, 'winery', 'points', m=0.5)
 
     ###################################################
 
     print('begin transform description')
-    if Path('vectorized_descriptions.csv').is_file():
-        vectorized_descriptions = pd.read_csv('vectorized_descriptions.csv')
-    else:
-        descriptions = data['description'].tolist()
-        if not Path('doc2vec.model').is_file():
-            print('train model')
-            model = gensim.models.doc2vec.Doc2Vec(vector_size=50, min_count=2, epochs=20)
-            train_corpus = list(read_corpus(descriptions))
-            model.build_vocab(train_corpus)
-            model.train(train_corpus, total_examples=model.corpus_count, epochs=model.epochs)
-            model.save('doc2vec.model')
-            vectorized_descriptions = [model.infer_vector(corpus.words) for corpus in train_corpus]
-        else:
-            model = gensim.models.doc2vec.Doc2Vec.load('doc2vec.model')
-            train_corpus = list(read_corpus(descriptions,True))
-            vectorized_descriptions = [model.infer_vector(corpus) for corpus in train_corpus]
-        pd.DataFrame(vectorized_descriptions).to_csv('vectorized_descriptions.csv')
-    
-    vectors['description'] = np.array(vectorized_descriptions)
+    vectors['description'] = doc2vec_encode(data,'description',vector_size=40,epochs=40)
 
     ###################################################
 
     print('begin transform designation')
-    designation = data['designation']
-    encoder = ce.BinaryEncoder(cols=['designation'])
-    designation_bin = encoder.fit_transform(designation)
-    vectors['designation'] = designation_bin.to_numpy()
+    vectors['designation'] = target_encode(data,'designation','points',m=0.5)
 
     print('begin transform variety')
-    variety = data['variety']
-    encoder = ce.BinaryEncoder(cols=['variety'])
-    variety_bin = encoder.fit_transform(variety)
-    vectors['variety'] = variety_bin.to_numpy()
+    vectors['variety'] = binary_encode(data,'variety')
 
     ###################################################
 
     print('begin transform taster_name')
-    taster_names = data['taster_name']
-    vectors['taster_name'] = pd.get_dummies(taster_names).to_numpy()
+    vectors['taster_name'] =  sum_encode(data, 'taster_name')
 
     print('begin transform taster_twitter_handle')
     vectors['taster_twitter_handle'] = np.reshape(data['taster_twitter_handle'].to_numpy(),(data.shape[0],1))
@@ -285,9 +272,52 @@ def transform(data, stats):
     # 'points': integer
     vectors['points'] = data['points'].to_numpy()
 
-    print('end data vectorizing')
+    print('END DATA TRANSFORMING')
     print('----------------------------------')
     return vectors
+
+
+def sum_encode(data, source):
+    encoder = ce.SumEncoder(cols=[source])
+    vector = encoder.fit_transform(data[source])
+    return vector.to_numpy()
+
+
+def binary_encode(data, source):
+    encoder = ce.BinaryEncoder(cols=[source])
+    vector = encoder.fit_transform(data[source])
+    return vector.to_numpy()
+
+
+def target_encode(data, source, target, m=0):
+    encoder = ce.MEstimateEncoder(cols=source,m=m)
+    vector = encoder.fit_transform(data[source],data[target])
+    return np.reshape(vector.to_numpy(),(data.shape[0],1))
+
+
+def doc2vec_encode(data, label, vector_size=40, epochs=20):
+    vec_data_path = f'./vectorized_data/vectorized_{label}_vs_{vector_size}_epo_{epochs}.csv'
+    model_path = f'./doc2vec_model/doc2vec_{label}_vs_{vector_size}_epo_{epochs}.model'
+    if Path(vec_data_path).is_file():
+        vec_content = pd.read_csv(vec_data_path)
+        vec_content = vec_content.iloc[data.index.values.tolist(),:]
+        vec_content.drop(columns=vec_content.columns[0], axis=1,inplace=True)
+    else:
+        content = data[label].tolist()
+        if not Path(model_path).is_file():
+            print('train model')
+            model = gensim.models.doc2vec.Doc2Vec(vector_size=vector_size, min_count=2, epochs=epochs)
+            train_corpus = list(read_corpus(content))
+            model.build_vocab(train_corpus)
+            model.train(train_corpus, total_examples=model.corpus_count, epochs=model.epochs)
+            model.save(model_path)
+            vec_content = [model.infer_vector(corpus.words) for corpus in train_corpus]
+        else:
+            model = gensim.models.doc2vec.Doc2Vec.load(model_path)
+            train_corpus = list(read_corpus(content,True))
+            vec_content = [model.infer_vector(corpus) for corpus in train_corpus]
+        pd.DataFrame(vec_content).to_csv(vec_data_path)
+    return np.array(vec_content)
 
 
 def read_corpus(corpuses, tokens_only=False):
@@ -307,7 +337,7 @@ def vectorized_data():
     data = extract_wine_vintage(data)
     data = data_preprocessing(data)
     stats = compute_statistics(data)
-    return transform(data, stats)
+    return transform(data)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                             #
@@ -340,27 +370,27 @@ if __name__ == '__main__':
     """
 
     data = get_wine_reviews_data()
-    data = extract_wine_vintage(data)
+    vectorized_data(data)
+    # data = extract_wine_vintage(data)
     # data = data_preprocessing(data)
-
-    print(data.isna().sum())
+    # print(data['designation'].value_counts(normalize=True,ascending=True))
     # print(data.groupby(['province','country']).count())
-    # data.boxplot('points','designation')
+    # data.boxplot('price')
     # plt.show()
     # print(data[data["country"].isnull()][['province','region_1','region_2','designation']])
 
     # transform(data,{})
-    # print(compute_statistics(data))
-    plot_histograms(data, {"country": 20,
-                           "designation": 20,
-                           "price": 3,
-                           "points": 3,
-                           "province":20,
-                           "region_1":20,
-                           "region_2": 20,
-                           "taster_name":20,
-                           "taster_twitter_handle": 20,
-                           "variety": 20,
-                           "winery": 20,
-                           "vintage": 3
-                           })
+    compute_statistics(data)
+    # plot_histograms(data, {"country": 20,
+    #                        "designation": 40,
+    #                        "price": 3,
+    #                        "points": 3,
+    #                        "province":20,
+    #                        "region_1":20,
+    #                        "region_2": 20,
+    #                        "taster_name":20,
+    #                        "taster_twitter_handle": 20,
+    #                        "variety": 20,
+    #                        "winery": 20,
+    #                        "vintage": 3
+    #                        })
