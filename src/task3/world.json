@@ -1,0 +1,1293 @@
+{
+    "size": [
+        16,
+        16
+    ],
+    "reward_class": "DefaultReward",
+    "grid": [
+        {
+            "x": 0,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 1,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 2,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 3,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 4,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 5,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 6,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 7,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 8,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 9,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 10,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 11,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 12,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 13,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 14,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 15,
+            "y": 0,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 1,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 8,
+            "y": 1,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 1,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 1,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 1,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 12,
+            "y": 1,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 13,
+            "y": 1,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 14,
+            "y": 1,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 15,
+            "y": 1,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 2,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 8,
+            "y": 2,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 2,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 2,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 2,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 12,
+            "y": 2,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 13,
+            "y": 2,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 14,
+            "y": 2,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 15,
+            "y": 2,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 3,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 6,
+            "y": 3,
+            "reachable": true,
+            "terminal": false,
+            "direction": "down",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 11,
+            "y": 3,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 12,
+            "y": 3,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 13,
+            "y": 3,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 15,
+            "y": 3,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 4,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 6,
+            "y": 4,
+            "reachable": true,
+            "terminal": false,
+            "direction": "down",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 11,
+            "y": 4,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 13,
+            "y": 4,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 15,
+            "y": 4,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 5,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 6,
+            "y": 5,
+            "reachable": true,
+            "terminal": false,
+            "direction": "down",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 11,
+            "y": 5,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 15,
+            "y": 5,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 6,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 2,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 3,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 4,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 5,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 6,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 7,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 8,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 9,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 10,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 11,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 12,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 13,
+            "y": 6,
+            "reachable": true,
+            "terminal": false,
+            "direction": "left",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 15,
+            "y": 6,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 7,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 3,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 4,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 5,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 6,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 7,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 8,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 7,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 12,
+            "y": 7,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "GoalCell"
+        },
+        {
+            "x": 13,
+            "y": 7,
+            "reachable": true,
+            "terminal": false,
+            "direction": "up",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 15,
+            "y": 7,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 8,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 1,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "__cls__": "StartCell"
+        },
+        {
+            "x": 3,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 4,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 5,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 6,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 7,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 8,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 8,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 13,
+            "y": 8,
+            "reachable": true,
+            "terminal": false,
+            "direction": "up",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 15,
+            "y": 8,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 9,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 3,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 4,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 5,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 6,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 7,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 8,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 9,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 13,
+            "y": 9,
+            "reachable": true,
+            "terminal": false,
+            "direction": "right",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 15,
+            "y": 9,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 10,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 5,
+            "y": 10,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 6,
+            "y": 10,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 7,
+            "y": 10,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 8,
+            "y": 10,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 10,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 10,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 10,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 15,
+            "y": 10,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 11,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 1,
+            "y": 11,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 2,
+            "y": 11,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 3,
+            "y": 11,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 5,
+            "y": 11,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 6,
+            "y": 11,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 7,
+            "y": 11,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 8,
+            "y": 11,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 11,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 11,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 11,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 15,
+            "y": 11,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 12,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 1,
+            "y": 12,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 2,
+            "y": 12,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 3,
+            "y": 12,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 5,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 6,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 7,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 8,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 9,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 10,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 12,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 13,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "direction": "down",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 14,
+            "y": 12,
+            "reachable": true,
+            "terminal": false,
+            "direction": "down",
+            "__cls__": "ArrowCell"
+        },
+        {
+            "x": 15,
+            "y": 12,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 13,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 1,
+            "y": 13,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 2,
+            "y": 13,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 3,
+            "y": 13,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 4,
+            "y": 13,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 10,
+            "y": 13,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 11,
+            "y": 13,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 15,
+            "y": 13,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 14,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 1,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 2,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 3,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 4,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 5,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 6,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 7,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 8,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 9,
+            "y": 14,
+            "reachable": true,
+            "terminal": true,
+            "__cls__": "PitCell"
+        },
+        {
+            "x": 10,
+            "y": 14,
+            "reachable": true,
+            "terminal": false,
+            "stick_prob": 0.5,
+            "__cls__": "SwampCell"
+        },
+        {
+            "x": 15,
+            "y": 14,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 0,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 1,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 2,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 3,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 4,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 5,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 6,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 7,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 8,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 9,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 10,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 11,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 12,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 13,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 14,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        },
+        {
+            "x": 15,
+            "y": 15,
+            "reachable": false,
+            "terminal": false,
+            "__cls__": "WallCell"
+        }
+    ]
+}
