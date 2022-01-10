@@ -1,6 +1,12 @@
+from task2.regression import RidgeRegression, transform
+from task2.wine_dataset import vectorized_data
+import numpy as np
+
+
 def get_regression_model():
     # TODO: instantiate the regression model of your choice with the optimal set of parameters here and return it.
-    raise NotImplementedError('TODO')
+    C = 10
+    return RidgeRegression(C)
 
 
 def get_transformed_data():
@@ -11,4 +17,7 @@ def get_transformed_data():
     # that you include it in your repository then or write some code that downloads it if it is not present.
     #
     # Please return data as two floating point numpy arrays X, y with X.shape==(n, d) and y.shape==(n,)
-    raise NotImplementedError('TODO')
+    data = vectorized_data()
+    points = np.array(data.pop('points'))
+    data = transform(data)
+    return data, points

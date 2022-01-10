@@ -113,9 +113,7 @@ def plot_histograms(data, columns):
                     data[label].value_counts().head(columns[label]).plot.bar()
                 else:
                     data[label].value_counts().plot.bar()
-            plt.xticks(fontsize=10)
-            plt.yticks(fontsize=10)
-
+        plt.title(f'Histogram of {label}')
         fig.tight_layout()
         plt.savefig(os.path.join(PATH, f'1c_histogram_of_{label}.pdf'))
         plt.close(fig)
@@ -370,8 +368,7 @@ if __name__ == '__main__':
     """
 
     data = get_wine_reviews_data()
-    vectorized_data(data)
-    # data = extract_wine_vintage(data)
+    data = extract_wine_vintage(data)
     # data = data_preprocessing(data)
     # print(data['designation'].value_counts(normalize=True,ascending=True))
     # print(data.groupby(['province','country']).count())
@@ -392,5 +389,5 @@ if __name__ == '__main__':
                            "taster_twitter_handle": 20,
                            "variety": 20,
                            "winery": 20,
-                           "vintage": 10
+                           "vintage": 80
                            })

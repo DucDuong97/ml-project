@@ -1,6 +1,7 @@
 % !TeX spellcheck = en_GB
 \documentclass[11pt]{article}
 \usepackage{graphicx}
+\usepackage{hyperref}
 \usepackage{listings}
 \title{Machine Learning Project\\Task 2}
 \author{Duy Nguyen Dinh \\ dinh@rhrk.uni-kl.de\and
@@ -23,53 +24,29 @@ Plotting is one way to get an overview of the values of each column. There will 
 
 Because there can be too many unique values to plot, we decided to plot the counts of top 20 unique values for string columns. We also exclude description and title columns from the plot result with the assumption that each entry of these columns are unique and this makes plotting for these columns serves no purpose.
 
-Country
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_country.pdf}
 
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_country.png}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_designation.pdf}
 
-Designation
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_points.pdf}
 
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_designation.png}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_price.pdf}
 
-Points (bin=10)
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_province.pdf}
 
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_points.png}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_region_1.pdf}
 
-Price (bin=80)
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_region_2.pdf}
 
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_price.png}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_taster_name.pdf}
 
-Province
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_taster_twitter_handle.pdf}
 
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_province.png}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_variety.pdf}
 
-Region\_1
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_winery.pdf}
 
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_region_1.png}
-
-Region\_2
-
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_region_2.png}
-
-Taster\_name
-
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_taster_name.png}
-
-Taster\_twitter\_handle
-
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_taster_twitter_handle.png}
-
-Variety
-
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_variety.png}
-
-Winery
-
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_winery.png}
-
-Vintage (bin=10)
-
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_vintage.png}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/1c_histogram_of_vintage.pdf}
 
 We also retrieve the number of null entries for each column:
 
@@ -92,28 +69,100 @@ We also retrieve the number of null entries for each column:
 
 \subsection{Statistics}
 
+We calculate 5 insights for the numerical data: minimum, maximum, mean, median, standard derivation. Because the data is standardized in the pre-processing phase, the means are nearly 0, the standard derivations nearly 1.
 
+\begin{lstlisting}
+BEGIN COMPUTING STATS
+.
+price_minimum = -0.792466772305429
+price_maximum = 82.48840796649863
+price_mean = 0.0005821718408075238
+price_median = -0.18605263585782666
+price_std = 1.0006138616970786
+.............................
+.
+vintage_minimum = -1.5879808275786031
+vintage_maximum = 47.52570036289124
+vintage_mean = -0.0013231589048437516
+vintage_median = -0.08450079113564869
+vintage_std = 0.9975200577812415
+.............................
+END COMPUTING STATS
+\end{lstlisting}
 
 \subsection{Data Transformation}
 
-In this task, we transform each column individually and force each output to be a 2d matrix. We set the threshold of missing data on each row to 2. It means for example, a row that misses the country and province will be removed from the dataset.
+In this task, we transform each column individually and force each output to be a 2d matrix and have the same shape at the second dimension, so that after the transformation we can concatinate all the results to fit the model.\\
 
-Data from the columns will be classified into 3 types: numerical, categorical and text data.
+For categorical data, we set the rare values to 'Other'. For example, If the there is 2 records come from Egypt and the \textbf{min\_count} equals 3, then the country is set to 'Other'.
+\begin{lstlisting}[language=python]
+content.mask(content.map(content.value_counts()) < min_count, 'Other')
+\end{lstlisting}
 
-Numerical data includes \textbf{price}, \textbf{vintage}, \textbf{points}. For this data type, we reshape it from an 1d-array to a (N,1) matrix. Missing data will be fulfilled with the mean of the correspondent column. We will observe their standard deviation to assess the impact on the related weight of the model.
+We set the threshold of missing data on each row to 2. It means for example, a row that misses the country and province will be removed from the dataset. 
+\begin{lstlisting}[language=python]
+data.dropna(thresh=data.shape[1]-3)
+\end{lstlisting}
 
-Only the \textbf{description} column includes text data. First, texts will be tokenized and stop words and other with frequency less than 2 will be filtered out. Then a dictionary is created by the remaining words. We use Word2Vec model from the library Gensim to vectorize the description string. Next, the model will be trained for 20 epochs. Finally, the model transform each description into a vector with size 50.
+Data from the columns will be classified into 3 types: numerical, categorical and text data:
 
-The rest are categorical data. We can see also a set of hierachical type: {country, province, region_1, region_2}. There are plenty of encoding technics for that type of data. In this project we use mainly three methods: Sum encoding, Binary encoding, Target encoding. Sum encoding will be applied to the columns with a small set of categories like \textbf{taste_name}, \textbf{province}. It is an efficient method which represent the nature of categorical variable's encoding, but memory and runtime are the trade-off. In Sum encoding, missing data will be set to a vector of minus one. For columns that have a huge amount of categories and a small impact on the target column, we use binary encoding to reduce the features. The involved columns include \textbf{region_1} (1229 categories to 11 binary features), \textbf{winery} (16757 to 15), \textbf{designation} (37979 to 16), \textbf{variety} (707 to 10). We apply target encoding on \textbf{country}. Target encoding would lead to overfitting, therefore we use the version with additive smoothing. In this encoding, missing data will be set to the general mean.
+Numerical data includes \textbf{price}, \textbf{vintage}, \textbf{points}. For this data type, we reshape it from an 1d-array to a (N,1) matrix. Missing data will be fulfilled with the mean of the presenting data. We observe their standard deviation to assess the impact on the related weight of the model. When the impact if an column is huge, we standardize it with \textbf{StandardScaler} \footnote{\url{https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html}}.
 
-We realized that \textbf{taster_twitter_handle} data is identical with taster_name, when it exists. So, we decide to transform it into a boolean feature, expresses that whether the taster has a taster account. the tranformed data has only one variable, the feature correlation between \textbf{taster_name} and \textbf{taster_twitter_handle} is eliminated.
+Only the \textbf{description} column includes text data. First, texts will be tokenized and stop words and other with frequency less than 2 will be filtered out. Then a dictionary is created by the remaining words. We use \textbf{Doc2Vec} model\footnote{\url{https://radimrehurek.com/gensim/models/doc2vec.html}} to vectorize the description string. Next, the model will be trained for 20 \textbf{epochs}. Finally, the model transform each description into a vector with \textbf{vector size} 50.
+
+The rest are categorical data. We can see also a set of hierachical type: \textbf{country}, \textbf{province}, \textbf{region\_1}, \textbf{region\_2}. There are plenty of encoding technics for that type of data. In this project we use mainly three methods: Sum encoding, Binary encoding, Target encoding. Sum encoding will be applied to the columns with a small set of categories like \textbf{taste\_name}, \textbf{province}. It is an efficient method which represent the nature of categorical variable's encoding, but memory and runtime are the trade-off. In Sum encoding, missing data will be set to a vector of minus one. For columns that have a huge amount of categories and a small impact on the target column, we use binary encoding to reduce the features. The involved columns include \textbf{region\_1} (1229 categories to 11 binary features), \textbf{variety} (707 to 10). We apply target encoding on \textbf{country}, \textbf{designation}, \textbf{winery}. Target encoding would lead to overfitting, therefore we use the version with additive smoothing. In this encoding, missing data will be set to the general mean.
+
+We realized that \textbf{taster\_twitter\_handle} data is identical with taster\_name, when it exists. So, we decide to transform it into a boolean feature, expresses that whether the taster has a taster account. the tranformed data has only one variable, the feature correlation between \textbf{taster\_name} and \textbf{taster\_twitter\_handle} is eliminated.
 
 \textbf{title} is just the concatination of designation, vintage, variety, winery. Therefore, we ignore this column.
 
-\subsection{f}
+\subsection{New data prediction after pre-processing train data}
 
-When new type of wine is added, we still need some constraints to check if this is actual new type. For example, with a specific implementation, "US", "USA" and "America" in column country are totally different. This means we need a way to standardize the values for each column and different input values with the same context should be grouped together. When we reach a specific number of newly added row, the description column should be pre-processed again, as the description column relates to other columns best and use training algorithm to vectorize values.
+For categorical data: When a new category is detected, we still need some constraints to check if this is actual new. For example, with a specific implementation, "US", "USA" and "America" in column country are totally different. This means we need a way to pre-process the values for each categorical column and different input values with the same context should be grouped together. Next, when we have actually a new category from new data, it is problematic, since we use one-hot encoding for certain columns, which leads to missmatch of vector dimension size. Also in the case of standardized numerical data, new incoming data will make a huge change of the mean and derivation. Therefore, the solution is to merge the train data with the test data, then pre-process them together.
+
+For Doc2Vec model: When we reach a specific number of newly added rows, the Doc2Vec model for description column should be trained again with the new incoming data to enrich the vocabulary.
 \section{Ridge Regression}
+
+\subsection{Ridge Regression with Bias}
+
+The Ridge Regression with Bias is built on top of the one without bias. We extend each record of entry dataset by a constant (with numpy method \textbf{np.c\_}), which represents for the bias.
+
+\begin{lstlisting}[language=python, caption=KNN class]
+    class RidgeRegressionBias:
+    def __init__(self, C=1):
+        self.rr = RidgeRegression(C)
+
+    def fit(self, X, y):
+        data_size = len(y)
+        X = np.c_[X, np.ones(data_size)]
+        self.rr.fit(X,y)
+
+    def predict(self, X):
+        data_size = len(X)
+        X = np.c_[X, np.ones(data_size)]
+        return self.rr.predict(X)
+\end{lstlisting}
+
+\subsection{Relationship of ``points" column with other}
+
+In the plots below, we draw the linear functions of Ridge Regression (with Bias) model right on the scatter plot of the fitted data points. Therefore, we can see the derivation of the data points from the function.
+
+Some plot like \textbf{country} and \textbf{taster\_name}, we use one-hot encoding and PCA projection to reduce the number of dimensions to 1. Therefore, the distribution of data points is clustered.
+
+\textbf{designation} and \textbf{winery} in the another hand are target encoded. The distribution of data points has the shape of a parallelogram. the quality of this encoding can be measured by the standard derivation of encoded data (the smaller the better). Therefore, the vertical width of the parallelogram should be small.
+
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_country.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_description.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_designation.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_price.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_province.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_region_1.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_region_2.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_taster_name.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_vintage.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_variety.pdf}
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/2b_winery.pdf}
+
 
 \subsection{Forward step selection}
 We want to find the most impact features in the data and forward step selection is one of the options. We first start with an empty model with no fitted data, then we find the best feature to add to the model. This can be done base on the mean squared errors when we add each available feature to the model. We keep adding features into the model until we reach a certain number k.
@@ -126,7 +175,7 @@ As for the result of the given wine data:
     \item k=4: Feature: taster\_name with the mse of 4.75865561866921
 \end{itemize}
 
-The most significant features are the one with many unique values across the data (description, country) because the column with more unique values will contain better relations with other column. On the other hand, if most row cluster into a certain value or range of values (price/points/vintage), this makes prediction harder because the values do not hold any meaning for a good estimation (as completely different wine can have the same points)
+The most significant features are the one with many unique values across the data (description, country) because the column with more unique values will contain better relations with other column. On the other hand, if most row cluster into a certain value or range of values (price/points/vintage), this makes prediction harder because the values do not hold any meaning for a good estimation (as completely different wine can have the same points).
 
 % Print references
 \end{document}

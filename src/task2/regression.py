@@ -3,13 +3,11 @@ import math
 import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-from sklearn.model_selection import KFold
 
 import os
 import sys
 import time
 sys.path.append('../task1/')
-from knn import cross_validation
 from wine_dataset import vectorized_data, get_wine_reviews_data
 from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
@@ -36,8 +34,7 @@ class RidgeRegressionBias:
 
     def fit(self, X, y):
         data_size = len(y)
-        self.bias = 1
-        X = np.c_[X, np.ones(data_size)*self.bias]
+        X = np.c_[X, np.ones(data_size)]
         self.rr.fit(X,y)
 
     def predict(self, X):
@@ -100,6 +97,40 @@ def forward_stepwise_selection(data, points, k=5):
     return subset
 
 
+
+def cross_validation(clf, X, Y, m=5, metric=mean_sqrt_err):
+    data_size = np.size(Y)
+    fold_size = (int)(data_size / m)
+
+    tic = time.perf_counter()
+
+    accuracies = []
+    for i in range(m):
+        accuracies.append(single_validation(i, m, clf, X, Y, metric))
+
+    toc = time.perf_counter()
+    print(f"Execute in {toc - tic:0.4f} seconds")
+    # print(f"Compare Count: {cpr_count}")
+    acc = sum(accuracies) / m
+    print(f"Acc: {acc}")
+    return acc
+        
+
+def single_validation(i, m, clf, X, Y, metric):
+    data_size = np.size(Y)
+    fold_size = (int)(data_size / m)
+    include_idx = np.arange(i * fold_size, fold_size + i * fold_size)
+    mask = np.array([(i in include_idx) for i in range(data_size)])  ###
+    # retrieving the test data for each iteration
+    image_test_set = X[mask]
+    label_test_set = Y[mask]
+    # construct a training_set
+    image_train_set = X[~mask]
+    label_train_set = Y[~mask]
+    # using the training data and evaluate using given metric
+    clf.fit(image_train_set, label_train_set)
+    return metric(clf, image_test_set, label_test_set)
+
 if __name__ == '__main__':
     # setup_matplotlib()
 
@@ -137,9 +168,8 @@ if __name__ == '__main__':
     #     plt.savefig(os.path.join(PATH, f'2b_{col}.pdf'))
     #     plt.close(fig)
 
-
     #TODO: 2d, should be smaller than 6.3
-    cross_validation(RidgeRegression(), transform(data), points,metric=mean_sqrt_err)
+    cross_validation(RidgeRegression(10), transform(data), points,metric=mean_sqrt_err)
     #forward_stepwise_selection(data, points, k=5)
 
     #TODO: 2f
