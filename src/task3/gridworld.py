@@ -22,6 +22,7 @@ class Cell:
     """
     Cell base class. This corresponds to the behaviour of a blank cell
     """
+
     def __init__(self, world, x, y):
         self.world = world
         self.x = x
@@ -126,9 +127,11 @@ class Cell:
 class BlankCell(Cell):
     pass
 
+
 class StartCell(Cell):
     def allow_enter(self, old_state, action):
         return super(StartCell, self).allow_enter(old_state, action) or old_state.terminal
+
 
 class GoalCell(Cell):
     def __init__(self, world, x, y):
@@ -136,18 +139,20 @@ class GoalCell(Cell):
 
         self.terminal = True
 
+
 class WallCell(Cell):
     def __init__(self, world, x, y):
         super(WallCell, self).__init__(world, x, y)
 
         self.reachable = False
 
+
 class ArrowCell(Cell):
     def __init__(self, world, x, y, direction='left'):
         super(ArrowCell, self).__init__(world, x, y)
 
         self.direction = direction
-    
+
     def step(self, action):
         return Cell.step(self, self.direction)
 
@@ -161,16 +166,17 @@ class ArrowCell(Cell):
 
         return 0
 
+
 class SwampCell(Cell):
     def __init__(self, world, x, y, stick_prob=0.5):
         super(SwampCell, self).__init__(world, x, y)
 
         self.stick_prob = stick_prob
-    
+
     def step(self, action):
         if self.world.rng.random() < self.stick_prob:
             return self
-        
+
         return super(SwampCell, self).step(action)
 
     def get_afterstates(self, action):
@@ -185,9 +191,10 @@ class SwampCell(Cell):
 
         return 0
 
+
 class PitCell(GoalCell):
     pass
-        
+
 
 class DefaultReward:
     possible_rewards = [0, -1, -1000]
@@ -260,7 +267,7 @@ class World:
         world.start_states = []
 
         world.grid = np.array([[BlankCell(world, x, y) for x in range(world_info['size'][0])]
-                              for y in range(world_info['size'][1])], dtype=np.object)
+                               for y in range(world_info['size'][1])], dtype=np.object)
         for cell in world_info['grid']:
             cell.world = world
             if isinstance(cell, StartCell):
@@ -316,7 +323,7 @@ class World:
             if s != old_state:
                 sum += s.p_enter(old_state, action)
                 count += 1
-        return reward_p * (step_p + (1 - step_p)*(1 - sum/count))
+        return reward_p * (step_p + (1 - step_p) * (1 - sum / count))
 
 
 def random_walk(steps=100):
@@ -328,7 +335,7 @@ def random_walk(steps=100):
     ep_return = 0
     last_termination = 0
     for s in range(steps):
-        print(f'Step {s+1}/{steps}...')
+        print(f'Step {s + 1}/{steps}...')
         action = random.choice(['left', 'right', 'up', 'down'])
         print(f'Going {action}!')
         new_state, reward, done = world.step(action)
@@ -336,12 +343,113 @@ def random_walk(steps=100):
         print(f'Received a reward of {reward}!')
         print(f'New position is ({new_state.x}, {new_state.y}) on a {type(new_state).__name__}.')
         if done:
-            print(f'Episode terminated after {s+1-last_termination} steps. Total Return was {ep_return}.')
+            print(f'Episode terminated after {s + 1 - last_termination} steps. Total Return was {ep_return}.')
             ep_return = 0
-            last_termination = s+1
+            last_termination = s + 1
             print(f'Resetting the world...')
             world.reset()
 
 
+def sarsa(ep_num, prob, step_size=1):
+    # Initiate lookup table Q
+    # Conventional: First dim: current_state_x, Second dim: current_state_y
+    # Third dim: 0 - left, 1 - right, 2 - up, 3 - down
+    Q = np.zeros((16, 16, 4))
+
+    world = World.load_from_file('world.json')
+    world.reset()
+    print(f'Starting at pos. ({world.current_state.x}, {world.current_state.y}).')
+
+    for i in range(ep_num):
+        print(f"Executing episode {i}")
+        done = False
+        world.reset()
+        S = world.current_state
+
+        # Step 1
+        A = choose_action(world, Q, prob)
+        while not done:
+            # Step 2
+            new_state, reward, done = world.step(A[0])
+
+            # Step 3
+            new_action = choose_action(world, Q, prob)
+
+            # Step 4: Update Q
+            print(S)
+            print(Q[S.x, S.y, A[1]])
+            Q[S.x, S.y, A[1]] += step_size * (reward + Q[new_state.x, new_state.y, new_action[1]] - Q[S.x, S.y, A[1]])
+
+            # Step 5
+            A = new_action
+            S = new_state
+
+
+def q_learn(ep_num, prob, step_size=1):
+    Q = np.zeros((16, 16, 4))
+
+    world = World.load_from_file('world.json')
+    world.reset()
+    print(f'Starting at pos. ({world.current_state.x}, {world.current_state.y}).')
+
+    for i in range(ep_num):
+        print(f"Executing episode {i}")
+        done = False
+        world.reset()
+        S = world.current_state
+
+        while not done:
+            # Step 1
+            A = choose_action(world, Q, prob)
+            # Step 2
+            new_state, reward, done = world.step(A[0])
+            # Step 3: Update Q
+            print(Q[S.x, S.y, A[1]])
+            lookup_values = Q[new_state.x, new_state.y, :]
+            max_arg = max(lookup_values)
+            Q[S.x, S.y, A[1]] += step_size * (reward + max_arg - Q[S.x, S.y, A[1]])
+
+            # Step 4
+            S = new_state
+
+
+def choose_action(world, Q, prob):
+    choice = random.choices(["random_action", "argmax_action"], [prob, 1 - prob], k=1)[0]
+    if choice == "random_action":
+        A = random.choice(['left', 'right', 'up', 'down'])
+        action_num = action_text_to_num(A)
+    else:
+        lookup_values = Q[world.current_state.x, world.current_state.y, :]
+        max_lookup_value = max(lookup_values)
+        action_num = list(lookup_values).index(max_lookup_value)
+        A = action_num_to_text(action_num)
+    return A, action_num
+
+
+def action_text_to_num(action):
+    if action == 'left':
+        num = 0
+    elif action == 'right':
+        num = 1
+    elif action == 'up':
+        num = 2
+    else:
+        num = 3
+    return num
+
+
+def action_num_to_text(action):
+    if action == 0:
+        text = 'left'
+    elif action == 1:
+        text = 'right'
+    elif action == 2:
+        text = 'up'
+    else:
+        text = 'down'
+    return text
+
+
 if __name__ == '__main__':
-    random_walk(1000)
+    sarsa(100, 0.5, 1)
+    # q_learn(100, 0.5, 1)
