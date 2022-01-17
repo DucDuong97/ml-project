@@ -186,8 +186,6 @@ def data_preprocessing(data):
     std = StandardScaler()
     data[['price','vintage']] = std.fit_transform(data[['price','vintage']])
 
-    data.dropna(thresh=data.shape[1]-3, inplace=True)
-
     print('END DATA PREPROCESSING')
     print()
     data_loss_per = (data_size - data.shape[0])*100 / data_size
