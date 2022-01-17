@@ -1,7 +1,10 @@
 import json
 import random
+import math
 
 import numpy as np
+
+import gridworld_vis as gv
 
 
 def apply_action(state, action):
@@ -203,6 +206,8 @@ class DefaultReward:
     def reward_f(old_state, action, new_state):
         if old_state.terminal:
             return 0
+        # if new_state == old_state and not isinstance(new_state, SwampCell):
+        #     return -1000
         if isinstance(new_state, PitCell):
             return -1000
 
@@ -215,6 +220,8 @@ class DefaultReward:
         """
         if old_state.terminal:
             true_r = 0
+        # if new_state == old_state and not isinstance(new_state, SwampCell):
+        #     true_r = -1000
         elif isinstance(new_state, PitCell):
             true_r = -1000
         else:
@@ -350,106 +357,3 @@ def random_walk(steps=100):
             world.reset()
 
 
-def sarsa(ep_num, prob, step_size=1):
-    # Initiate lookup table Q
-    # Conventional: First dim: current_state_x, Second dim: current_state_y
-    # Third dim: 0 - left, 1 - right, 2 - up, 3 - down
-    Q = np.zeros((16, 16, 4))
-
-    world = World.load_from_file('world.json')
-    world.reset()
-    print(f'Starting at pos. ({world.current_state.x}, {world.current_state.y}).')
-
-    for i in range(ep_num):
-        print(f"Executing episode {i}")
-        done = False
-        world.reset()
-        S = world.current_state
-
-        # Step 1
-        A = choose_action(world, Q, prob)
-        while not done:
-            # Step 2
-            new_state, reward, done = world.step(A[0])
-
-            # Step 3
-            new_action = choose_action(world, Q, prob)
-
-            # Step 4: Update Q
-            print(S)
-            print(Q[S.x, S.y, A[1]])
-            Q[S.x, S.y, A[1]] += step_size * (reward + Q[new_state.x, new_state.y, new_action[1]] - Q[S.x, S.y, A[1]])
-
-            # Step 5
-            A = new_action
-            S = new_state
-
-
-def q_learn(ep_num, prob, step_size=1):
-    Q = np.zeros((16, 16, 4))
-
-    world = World.load_from_file('world.json')
-    world.reset()
-    print(f'Starting at pos. ({world.current_state.x}, {world.current_state.y}).')
-
-    for i in range(ep_num):
-        print(f"Executing episode {i}")
-        done = False
-        world.reset()
-        S = world.current_state
-
-        while not done:
-            # Step 1
-            A = choose_action(world, Q, prob)
-            # Step 2
-            new_state, reward, done = world.step(A[0])
-            # Step 3: Update Q
-            print(Q[S.x, S.y, A[1]])
-            lookup_values = Q[new_state.x, new_state.y, :]
-            max_arg = max(lookup_values)
-            Q[S.x, S.y, A[1]] += step_size * (reward + max_arg - Q[S.x, S.y, A[1]])
-
-            # Step 4
-            S = new_state
-
-
-def choose_action(world, Q, prob):
-    choice = random.choices(["random_action", "argmax_action"], [prob, 1 - prob], k=1)[0]
-    if choice == "random_action":
-        A = random.choice(['left', 'right', 'up', 'down'])
-        action_num = action_text_to_num(A)
-    else:
-        lookup_values = Q[world.current_state.x, world.current_state.y, :]
-        max_lookup_value = max(lookup_values)
-        action_num = list(lookup_values).index(max_lookup_value)
-        A = action_num_to_text(action_num)
-    return A, action_num
-
-
-def action_text_to_num(action):
-    if action == 'left':
-        num = 0
-    elif action == 'right':
-        num = 1
-    elif action == 'up':
-        num = 2
-    else:
-        num = 3
-    return num
-
-
-def action_num_to_text(action):
-    if action == 0:
-        text = 'left'
-    elif action == 1:
-        text = 'right'
-    elif action == 2:
-        text = 'up'
-    else:
-        text = 'down'
-    return text
-
-
-if __name__ == '__main__':
-    sarsa(100, 0.5, 1)
-    # q_learn(100, 0.5, 1)
