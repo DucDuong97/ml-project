@@ -2,9 +2,10 @@ import json
 import random
 
 import numpy as np
+import gridworld as gw
 
 import gridworld_vis as gv
-import gridworld as gw
+import matplotlib.pyplot as plt
 
 
 def sarsa(world, ep_num, prob, step_size=1, max_step=80):
@@ -13,6 +14,8 @@ def sarsa(world, ep_num, prob, step_size=1, max_step=80):
     # Conventional: First dim: current_state_x, Second dim: current_state_y
     # Third dim: 0 - left, 1 - right, 2 - up, 3 - down
     Q = np.zeros((16, 16, 4))
+    moves = []
+    returns = []
 
     for i in range(ep_num):
         print('-----------------------------')
@@ -22,6 +25,7 @@ def sarsa(world, ep_num, prob, step_size=1, max_step=80):
         S = world.current_state
         current_step = 0
         moves = []
+        ret = 0
 
         # Step 1
         action = choose_action(world, Q, prob)
@@ -34,16 +38,23 @@ def sarsa(world, ep_num, prob, step_size=1, max_step=80):
             new_action = choose_action(world, Q, prob)
             # Step 4: Update Q
             Q[S.x, S.y, action[1]] += step_size * (reward + Q[new_state.x, new_state.y, new_action[1]] - Q[S.x, S.y, action[1]])
-            # Step 5
+            # Retriving observed data and print info
             moves.append((new_state.x-S.x,new_state.y-S.y))
+            ret += reward
+            current_step += 1
+            # Step 5
             action = new_action
             S = new_state
-            current_step += 1
-    return moves
+        
+        if isinstance(S, gw.GoalCell) and not isinstance(S, gw.PitCell):
+            returns.append((i,ret))
+    return moves, returns
 
 
 def q_learn(world, ep_num, prob, step_size=1, max_step=100):
     Q = np.zeros((16, 16, 4))
+    returns = []
+    moves = []
 
     for i in range(ep_num):
         print('-----------------------------')
@@ -53,6 +64,7 @@ def q_learn(world, ep_num, prob, step_size=1, max_step=100):
         S = world.current_state
         current_step=0
         moves = []
+        ret = 0
 
         while not done and current_step < max_step:
             # Step 1
@@ -63,14 +75,18 @@ def q_learn(world, ep_num, prob, step_size=1, max_step=100):
             lookup_values = Q[new_state.x, new_state.y, :]
             max_arg = max(lookup_values)
             Q[S.x, S.y, A[1]] += step_size * (reward + max_arg - Q[S.x, S.y, A[1]])
-
-            # Step 4
+            # Retriving observed data and print info
             print(f'Current step: {current_step}, Current Cell: {S}, Next Dir: {A[0]}, Q: {Q[S.x, S.y, A[1]]}')
             print('.')
+            ret += reward
             moves.append((new_state.x-S.x,new_state.y-S.y))
-            S = new_state
             current_step += 1
-    return moves
+            # Step 4
+            S = new_state
+        
+        if isinstance(S, gw.GoalCell) and not isinstance(S, gw.PitCell):
+            returns.append((i,ret))
+    return moves, returns
 
 
 def choose_action(world, Q, prob):
@@ -131,8 +147,17 @@ def visualize_gridworld(world,actions):
     svg.saveas("../../report/task3/figures/grid.svg", pretty=True)
 
 
+def plot_ret_eps(returns):
+    plt.scatter(*zip(*returns))
+    plt.xlabel('episode')
+    plt.ylabel('return')
+    plt.title('Return on Episode')
+    plt.show()
+
+
 if __name__ == '__main__':
     world = gw.World.load_from_file('world.json')
     # actions = sarsa(world,10000, 0.1, step_size=0.5, max_step=60)
-    actions = q_learn(world,1, 0.1, step_size=1, max_step=60)
+    actions, returns = q_learn(world,10000, 0.01, step_size=1, max_step=60)
     visualize_gridworld(world,actions)
+    plot_ret_eps(returns)

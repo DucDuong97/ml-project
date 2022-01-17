@@ -206,8 +206,6 @@ class DefaultReward:
     def reward_f(old_state, action, new_state):
         if old_state.terminal:
             return 0
-        # if new_state == old_state and not isinstance(new_state, SwampCell):
-        #     return -1000
         if isinstance(new_state, PitCell):
             return -1000
 
@@ -220,8 +218,6 @@ class DefaultReward:
         """
         if old_state.terminal:
             true_r = 0
-        # if new_state == old_state and not isinstance(new_state, SwampCell):
-        #     true_r = -1000
         elif isinstance(new_state, PitCell):
             true_r = -1000
         else:

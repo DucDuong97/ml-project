@@ -81,11 +81,11 @@ def gridworld(n=10, actions=None, tile2classes=None, extra_css=""):
                      in enumerate(offsets)]
         agent_css = """
             .agent {
-            r: 3%;
-            fill: black;
-            stroke-width: 2;
-            stroke: grey;
-            animation: move """+ str(0.3*len(keyframes)) +"""s ease forwards;
+                r: 3%;
+                fill: black;
+                stroke-width: 2;
+                stroke: grey;
+                animation: move """+ str(0.3*len(keyframes)) +"""s ease forwards;
             }
         """
         move_css = "\n@keyframes move {\n" + '\n'.join(keyframes) + "\n}"
