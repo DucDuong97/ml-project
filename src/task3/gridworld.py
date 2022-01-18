@@ -1,10 +1,7 @@
 import json
 import random
-import math
 
 import numpy as np
-
-import gridworld_vis as gv
 
 
 def apply_action(state, action):
@@ -222,6 +219,60 @@ class DefaultReward:
             true_r = -1000
         else:
             true_r = -1
+
+        return int(true_r == reward)
+
+class SecondReward:
+    @staticmethod
+    def reward_f(old_state, action, new_state):
+        if old_state.terminal:
+            return 0
+        if isinstance(new_state, PitCell):
+            return -1000
+        if isinstance(new_state, GoalCell):
+            return 1
+
+        return 0
+
+    @staticmethod
+    def reward_p(reward, new_state, old_state, action):
+        """
+        Computes p(R_{t+1} | S_{t+1}=new_state, S_t=old_state, A_t=action)
+        """
+        if old_state.terminal:
+            true_r = 0
+        elif isinstance(new_state, PitCell):
+            true_r = -1000
+        elif isinstance(new_state, GoalCell):
+            true_r = 1
+        else:
+            true_r = 0
+
+        return int(true_r == reward)
+
+class ThirdReward:
+    def __init__(self, goal=(12,7)):
+        self.goal = goal
+
+    @staticmethod
+    def reward_f(self, old_state, action, new_state):
+        if old_state.terminal:
+            return 0
+        if isinstance(new_state, PitCell):
+            return -1000
+        return - abs(self.goal[0] - new_state.x) - abs(self.goal[1] - new_state.y)
+
+    @staticmethod
+    def reward_p(self, reward, new_state, old_state, action):
+        """
+        Computes p(R_{t+1} | S_{t+1}=new_state, S_t=old_state, A_t=action)
+        """
+        if old_state.terminal:
+            true_r = 0
+        elif isinstance(new_state, PitCell):
+            true_r = -1000
+        else:
+            true_r = - abs(self.goal[0] - new_state.x) - abs(self.goal[1] - new_state.y)
 
         return int(true_r == reward)
 
