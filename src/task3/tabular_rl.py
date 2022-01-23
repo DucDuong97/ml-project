@@ -171,14 +171,15 @@ def one_step_lookahead(world, state, V, discount_factor):
     action_values = np.zeros(nA)
     for action_num in range(nA):
         action = action_num_to_text(action_num)
-        proposed_state = state.step(action)
-        if proposed_state.allow_enter(state, action):
-            next_state = proposed_state
-        else:
-            next_state = state
-        reward = world.reward_class.reward_f(state, action, next_state)
-        p = world.p(next_state, reward, state, action)
-        action_values[action_num] += p * (reward + discount_factor * V[next_state.y, next_state.x])
+        for next_state in state.get_afterstates(action):
+            proposed_state = state.step(action)
+            if proposed_state.allow_enter(state, action):
+                next_state = proposed_state
+            else:
+                next_state = state
+            reward = world.reward_class.reward_f(state, action, next_state)
+            p = world.p(next_state, reward, state, action)
+            action_values[action_num] += p * (reward + discount_factor * V[next_state.y, next_state.x])
     return action_values
 
 
@@ -238,4 +239,4 @@ if __name__ == '__main__':
     policy,V = value_iteration(world)
     sb.heatmap(V,annot=True)
     plt.show()
-    # visualize_gridworld(world,walk_with_policy(world, policy))
+    visualize_gridworld(world,walk_with_policy(world, policy))
