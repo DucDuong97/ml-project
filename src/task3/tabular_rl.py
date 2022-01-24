@@ -135,11 +135,13 @@ def value_iteration(world, discount=1.0, theta=1e-9, max_iter=1e4):
     print('STARTING VALUE ITERATION')
     V = np.zeros(world.grid.shape)
     for i in range(int(max_iter)):
+        new_V = np.zeros(world.grid.shape)
         # Early stopping condition
         delta = 0
         # Update each state
         for state in world.grid.flatten():
-            if isinstance(state,gw.WallCell): continue
+            if isinstance(state,gw.WallCell):
+                continue
             # Do a one-step lookahead to calculate state-action values
             action_values = one_step_lookahead(world, state, V, discount)
             # Select best action to perform based on the highest state-action value
@@ -147,8 +149,9 @@ def value_iteration(world, discount=1.0, theta=1e-9, max_iter=1e4):
             # Calculate change in value
             delta = max(delta, np.abs(V[state.y,state.x] - best_action_value))
             # Update the value function for current state
-            V[state.y,state.x] = best_action_value
+            new_V[state.y,state.x] = best_action_value
             # Check if we can stop
+        V = new_V
         if delta < theta:
                 print(f'Value-iteration converged at iteration#{i}.')
                 break
@@ -171,11 +174,15 @@ def one_step_lookahead(world, state, V, discount_factor):
     action_values = np.zeros(nA)
     for action_num in range(nA):
         action = action_num_to_text(action_num)
-        for next_state in state.get_afterstates(action):
-            proposed_state = state.step(action)
+        next_state = None
+        for proposed_state in state.get_afterstates(action):
             if proposed_state.allow_enter(state, action):
+                if proposed_state is next_state:
+                    continue
                 next_state = proposed_state
             else:
+                if state is next_state:
+                    continue
                 next_state = state
             reward = world.reward_class.reward_f(state, action, next_state)
             p = world.p(next_state, reward, state, action)
@@ -217,7 +224,7 @@ def visualize_gridworld(world,actions):
             return "recharge"
         return "normal"  
     svg = gv.gridworld(n=16, tile2classes=tile2classes, actions=actions)
-    svg.saveas("../../report/task3/figures/grid.svg", pretty=True)
+    svg.saveas("grid.svg", pretty=True)
 
 
 def plot_ret_eps(returns):
@@ -230,12 +237,13 @@ def plot_ret_eps(returns):
 
 if __name__ == '__main__':
     world = gw.World.load_from_file('world.json')
+    # world.reward_class = gw.ThirdReward
+
     # actions, returns = sarsa(world,10000, 0.1, step_size=0.5, max_step=60)
     # actions, returns = q_learn(world,10000, 0.01, step_size=1, max_step=60)
     # visualize_gridworld(world,actions)
     # plot_ret_eps(returns)
 
-    # world.reward_class = gw.ThirdReward
     policy,V = value_iteration(world)
     sb.heatmap(V,annot=True)
     plt.show()
