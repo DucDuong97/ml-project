@@ -156,7 +156,7 @@ def plot_ret_eps(returns):
 
 
 if __name__ == '__main__':
-    world = gw.World.load_from_file('world.json')
+    world = gw.World().load_from_file('world.json')
     # actions = sarsa(world,10000, 0.1, step_size=0.5, max_step=60)
     actions, returns = q_learn(world,10000, 0.01, step_size=1, max_step=60)
     visualize_gridworld(world,actions)
