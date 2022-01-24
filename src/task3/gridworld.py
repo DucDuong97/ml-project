@@ -181,7 +181,7 @@ class SwampCell(Cell):
 
     def get_afterstates(self, action):
         x, y = apply_action(self, action)
-        return [self, self.world.get_state(x, y)]
+        return set([self, self.world.get_state(x, y)])
 
     def p_step(self, action, new_state):
         if new_state == Cell.step(self, action):
@@ -251,19 +251,17 @@ class SecondReward:
         return int(true_r == reward)
 
 class ThirdReward:
-    def __init__(self, goal=(12,7)):
-        self.goal = goal
 
     @staticmethod
-    def reward_f(self, old_state, action, new_state):
+    def reward_f(old_state, action, new_state):
         if old_state.terminal:
             return 0
         if isinstance(new_state, PitCell):
             return -1000
-        return - abs(self.goal[0] - new_state.x) - abs(self.goal[1] - new_state.y)
+        return - abs(7 - new_state.x) - abs(12 - new_state.y)
 
     @staticmethod
-    def reward_p(self, reward, new_state, old_state, action):
+    def reward_p(reward, new_state, old_state, action):
         """
         Computes p(R_{t+1} | S_{t+1}=new_state, S_t=old_state, A_t=action)
         """
@@ -272,7 +270,7 @@ class ThirdReward:
         elif isinstance(new_state, PitCell):
             true_r = -1000
         else:
-            true_r = - abs(self.goal[0] - new_state.x) - abs(self.goal[1] - new_state.y)
+            true_r = - abs(7 - new_state.x) - abs(12 - new_state.y)
 
         return int(true_r == reward)
 
