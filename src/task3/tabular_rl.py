@@ -1,4 +1,3 @@
-import json
 import random
 
 import numpy as np
@@ -74,8 +73,7 @@ def q_learn(world, ep_num, prob, step_size=1, max_step=100):
             new_state, reward, done = world.step(A[0])
             # Step 3: Update Q
             lookup_values = Q[new_state.x, new_state.y, :]
-            max_arg = max(lookup_values)
-            Q[S.x, S.y, A[1]] += step_size * (reward + max_arg - Q[S.x, S.y, A[1]])
+            Q[S.x, S.y, A[1]] += step_size * (reward + max(lookup_values) - Q[S.x, S.y, A[1]])
             # Retriving observed data and print info
             print(f'Current step: {current_step}, Current Cell: {S}, Next Dir: {A[0]}, Q: {Q[S.x, S.y, A[1]]}')
             print('.')
@@ -98,8 +96,7 @@ def choose_action(world, Q, prob):
         print(f'Random Choice, {A}')
     else:
         lookup_values = Q[world.current_state.x, world.current_state.y, :]
-        max_lookup_value = max(lookup_values)
-        action_num = list(lookup_values).index(max_lookup_value)
+        action_num =  np.argmax(lookup_values)
         A = action_num_to_text(action_num)
         print(f'Maximum Choice, {lookup_values}, {A}')
     return A, action_num
