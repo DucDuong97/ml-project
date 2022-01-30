@@ -4,7 +4,6 @@ import gym
 from pyglet.window import key
 import numpy as np
 
-env = gym.make('CartPole-v1')
 
 
 def interactive_cartpole():
@@ -13,6 +12,7 @@ def interactive_cartpole():
     Press Space to reset the cart-pole and press Escape to close the window.
     """
 
+    env = gym.make('CartPole-v1')
     # Make sure to render once so that the viewer exists
     env.reset()
     env.render()
@@ -52,24 +52,61 @@ def interactive_cartpole():
 
     env.close()
 
-
-num_bucket_x = 1
-num_bucket_delta_x = 1
-num_bucket_theta = 6
-num_bucket_delta_theta = 3
-
-# Define bounds for the states
-env.observation_space.low[3] = -0.82
-env.observation_space.high[3] = 0.82
-value_bounds = list(zip(env.observation_space.low, env.observation_space.high))
-value_bounds[1] = (-9.6, 9.6)
-value_bounds[3] = (-0.82, 0.82)
+num_bucket_x = 48
+size_bucket_x = 0.1
+x_lower_bound = -2.4
+x_upper_bound = 2.4
 
 
-def q_learn_cartpole(num_ep, prob, step_size=1, max_step=500):
-    # Q = np.zeros((num_bucket_x, num_bucket_delta_x, num_bucket_theta, num_bucket_delta_theta, 2))
-    Q = np.zeros((num_bucket_theta, num_bucket_delta_theta, 2))
-    returns = []
+num_bucket_x_vec = 48*2
+size_bucket_x_vec = 0.1
+x_vec_lower_bound = -4.8
+x_vec_upper_bound = 4.8
+
+
+num_bucket_theta = 24
+size_bucket_theta = 1
+theta_lower_bound = -12
+theta_upper_bound = 12
+
+
+num_bucket_theta_vec = 24
+size_bucket_theta_vec = 1
+theta_vec_lower_bound = -12
+theta_vec_upper_bound = 12
+
+def discret_x(value):
+    if value == x_lower_bound:
+        return 0
+    elif value == x_upper_bound:
+        return num_bucket_x - 1
+    return math.floor(value / size_bucket_x)
+
+def discret_x_vec(value):
+    if value == x_vec_lower_bound:
+        return 0
+    elif value == x_vec_upper_bound:
+        return num_bucket_x_vec - 1
+    return math.floor(value / size_bucket_x_vec)
+
+def discret_theta(value):
+    if value == theta_lower_bound:
+        return 0
+    elif value == theta_upper_bound:
+        return num_bucket_theta - 1
+    return math.floor(value / size_bucket_theta)
+
+def discret_theta_vec(value):
+    if value == theta_vec_lower_bound:
+        return 0
+    elif value == theta_vec_upper_bound:
+        return num_bucket_theta_vec - 1
+    return math.floor(value / size_bucket_theta_vec)
+
+
+def q_learn_cartpole(env, num_ep, prob, step_size=1, max_step=500):
+
+    Q = np.zeros((num_bucket_x, num_bucket_x_vec, num_bucket_theta, num_bucket_theta_vec, 2))
     moves = []
 
     for i in range(num_ep):
@@ -80,10 +117,9 @@ def q_learn_cartpole(num_ep, prob, step_size=1, max_step=500):
         env.reset()
         #env.render()
         S = env.state
-        current_step = 0
         moves = []
         ret = 0
-        while not done and current_step < max_step:
+        for i in range(max_step):
             # Step 1
             A = choose_action(env, Q, prob)
             # Step 2
@@ -91,31 +127,22 @@ def q_learn_cartpole(num_ep, prob, step_size=1, max_step=500):
 
             #print(new_state)
             if done:
-                print(f"Reward: {current_step}")
+                print(i)
                 break
 
             # Step 3: Update Q
-            lookup_values = Q[  #map_to_bucket(new_state[0], value_bounds[0], num_bucket_x),
-                                #map_to_bucket(new_state[1], value_bounds[1], num_bucket_delta_x),
-                                map_to_bucket(new_state[2], value_bounds[2], num_bucket_theta),
-                                map_to_bucket(new_state[3], value_bounds[3], num_bucket_delta_theta), :]
-            max_arg = max(lookup_values)
-            Q[#map_to_bucket(S[0], value_bounds[0], num_bucket_x),
-              #map_to_bucket(S[1], value_bounds[1], num_bucket_delta_x),
-              map_to_bucket(S[2], value_bounds[2], num_bucket_theta),
-              map_to_bucket(S[3], value_bounds[3], num_bucket_delta_theta), A] \
-                += step_size * (reward + max_arg - Q[#map_to_bucket(S[0], value_bounds[0], num_bucket_x),
-                                                     #map_to_bucket(S[1], value_bounds[1], num_bucket_delta_x),
-                                                     map_to_bucket(S[2], value_bounds[2], num_bucket_theta),
-                                                     map_to_bucket(S[3], value_bounds[3], num_bucket_delta_theta), A])
+            lookup_values = Q[discret_x(new_state[0]),discret_x_vec(new_state[1]),
+                              discret_theta(new_state[2]),discret_theta_vec(new_state[3]), :]
+            Q[discret_x(S[0]),discret_x_vec(S[1]),
+            discret_theta(S[2]),discret_theta_vec(S[3]), A] \
+                += step_size * (reward + max(lookup_values) - 
+                    Q[discret_x(S[0]),discret_x_vec(S[1]),
+                    discret_theta(S[2]),discret_theta_vec(S[3]), A])
             # Retriving observed data and print info
             ret += reward
             moves.append(A)
-            current_step += 1
             # Step 4
             S = new_state
-        print(moves)
-        #env.close()
     return Q
 
 
@@ -124,25 +151,13 @@ def choose_action(env, Q, prob):
     if choice == "random_action":
         return env.action_space.sample()
     else:
-        lookup_values = Q[  #map_to_bucket(env.state[0], value_bounds[0], num_bucket_x),
-                            #map_to_bucket(env.state[1], value_bounds[1], num_bucket_delta_x),
-                            map_to_bucket(env.state[2], value_bounds[2], num_bucket_theta),
-                            map_to_bucket(env.state[3], value_bounds[3], num_bucket_delta_theta), :]
+        lookup_values = Q[discret_x(env.state[0]),discret_x_vec(env.state[1]),
+                              discret_theta(env.state[2]),discret_theta_vec(env.state[3]), :]
         max_lookup_value = max(lookup_values)
         return list(lookup_values).index(max_lookup_value)
 
 
-def map_to_bucket(value, bounds, num_bucket):
-    #print(value)
-    #print(bounds)
-    bucket_size = (bounds[1] - bounds[0]) / num_bucket
-    if value <= bounds[0]:
-        return 0
-    elif value >= bounds[1]:
-        return num_bucket - 1
-    return math.floor((value - bounds[0]) / bucket_size)
-
-
 if __name__ == '__main__':
-    #print(q_learn_cartpole(800, 0.05))
-    print(1.0 - math.log10((200+1)/25.0))
+    env = gym.make('CartPole-v1')
+    q_learn_cartpole(env, 800, 0.01)
+
