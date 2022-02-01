@@ -110,7 +110,7 @@ def q_learn_cartpole(env, eps_num=200, lr=0.9, max_step=500):
         """
         last_scores = eps_scores[-5:]
         last_scores_avg = sum(last_scores) / max(1,len(last_scores))
-        er = max(0,1 - last_scores_avg/20)
+        er = max(0,1 - last_scores_avg/40)
         
         print('-----------------------------')
         print(f"EXECUTING EPISODE {ep}, er = {er}")
