@@ -52,69 +52,84 @@ def interactive_cartpole():
 
     env.close()
 
-num_bucket_x = 48
-size_bucket_x = 0.1
+num_bucket_x = 3
 x_lower_bound = -2.4
 x_upper_bound = 2.4
+size_bucket_x = (x_upper_bound - x_lower_bound)/num_bucket_x
 
-num_bucket_x_vec = 48*2
-size_bucket_x_vec = 0.1
-x_vec_lower_bound = -4.8
-x_vec_upper_bound = 4.8
+num_bucket_x_vec = 3
+x_vec_lower_bound = -2.4 * 10
+x_vec_upper_bound = 2.4 * 10
+size_bucket_x_vec = (x_vec_upper_bound - x_vec_lower_bound)/num_bucket_x_vec
 
-num_bucket_theta = 8
+num_bucket_theta = 4
 theta_lower_bound = -12 * 2 * math.pi / 360
 theta_upper_bound = 12 * 2 * math.pi / 360
 size_bucket_theta = (theta_upper_bound - theta_lower_bound)/num_bucket_theta
 
-num_bucket_theta_vec = 8
+num_bucket_theta_vec = 4
 theta_vec_lower_bound = -12 * 20 * 2 * math.pi / 360
 theta_vec_upper_bound = 12 * 20 * 2 * math.pi / 360
 size_bucket_theta_vec = (theta_vec_upper_bound - theta_vec_lower_bound)/num_bucket_theta_vec
 
 
 def discret_x(value):
+    # print(math.floor((value - x_lower_bound) / size_bucket_x))
     return math.floor((value - x_lower_bound) / size_bucket_x)
 
 def discret_x_vec(value):
+    # print(math.floor((value - x_vec_lower_bound) / size_bucket_x_vec))
     return math.floor((value - x_vec_lower_bound) / size_bucket_x_vec)
 
 def discret_theta(value):
+    # print()
+    # print(f'value: {value}')
+    # print(f'lowerbound: {theta_lower_bound}')
+    # print(f'size: {size_bucket_theta}')
+    # print(math.floor((value - theta_lower_bound) / size_bucket_theta))
     return math.floor((value - theta_lower_bound) / size_bucket_theta)
 
 def discret_theta_vec(value):
+    # print(math.floor((value - theta_vec_lower_bound) / size_bucket_theta_vec))
     return math.floor((value - theta_vec_lower_bound) / size_bucket_theta_vec)
 
 
 def q_learn_cartpole(env, eps_num=200, lr=0.9, max_step=500):
 
     Q = np.zeros((num_bucket_theta, num_bucket_theta_vec, 2))
-    high_score = 0
+    highest_score = 0
     best_moves = []
     eps_scores = []
 
     for ep in range(eps_num):
+        """
+        Exploration Rate
+
+        Exploring rate inversely depends on the the average reward last 5 episodes
+        When the average reward larger than 40, stop exploring
+        """
         last_scores = eps_scores[-5:]
         last_scores_avg = sum(last_scores) / max(1,len(last_scores))
-        er = max(0,1 - last_scores_avg/40)
+        er = max(0,1 - last_scores_avg/20)
+        
         print('-----------------------------')
         print(f"EXECUTING EPISODE {ep}, er = {er}")
-        moves = []
-        done = False
 
         env.reset()
         env.render()
-        S = env.state
+        moves = []
         for step in range(max_step):
             # Step 1
-            A = choose_action(env, Q, er)
+            S = env.state
+            A = choose_action(S, Q, er)
             # Step 2
-            new_state, reward, done, info = env.step(A)
+            new_state, reward, done, _ = env.step(A)
             env.render()
+            # Termination work
             if done or step == max_step - 1:
                 eps_scores.append(step)
-                if step > high_score:
-                    high_score = step
+                if step > highest_score:
+                    highest_score = step
                     best_moves = moves
                 break
             # Step 3: Update Q
@@ -123,9 +138,8 @@ def q_learn_cartpole(env, eps_num=200, lr=0.9, max_step=500):
                         max(lookup_values) - Q[discret_theta(S[2]),discret_theta_vec(S[3]), A])
             # Retriving observed data and print info
             moves.append(A)
-            # Step 4
-            S = new_state
-    print(f'High score: {high_score}')
+
+    print(f'High score: {highest_score}')
     print(f'Best moves: {best_moves}')
     plot_ret_eps(eps_scores)
     return Q
@@ -139,12 +153,12 @@ def plot_ret_eps(returns):
     plt.show()
 
 
-def choose_action(env, Q, prob):
+def choose_action(S, Q, prob):
     choice = random.choices(["random_action", "argmax_action"], [prob, 1 - prob], k=1)[0]
     if choice == "random_action":
         return env.action_space.sample()
     else:
-        lookup_values = Q[discret_theta(env.state[2]),discret_theta_vec(env.state[3]), :]
+        lookup_values = Q[discret_theta(S[2]),discret_theta_vec(S[3]), :]
         return np.argmax(lookup_values)
 
 
