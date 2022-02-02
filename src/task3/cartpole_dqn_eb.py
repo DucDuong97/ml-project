@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import collections
 import numpy as np
 import gym
+from matplotlib import pyplot as plt
 from torch.nn.modules.loss import MSELoss
 #from cartpole_dqn import DQN
 
@@ -13,15 +14,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 env = gym.make('CartPole-v1')
 
 # Hyper-parameters
-num_ep = 10000
-batch_size = 32
-buffer_size = 1000000
+num_ep = 200
+batch_size = 128
+buffer_size = 10000
 prob = 1.0
 min_prob = 0.02
 discount_rate = 0.99
 decay_rate = 0.99
-lr = 1e-4
-update_rate = 100
+lr = 1e-3
+update_rate = 200
 
 
 class DQN(nn.Module):
@@ -69,15 +70,16 @@ class ExperienceReplay:
 
 
 def train(train_model, target_model, discount_rate, optimizer, buffer, loss_func=MSELoss()):
-    state, action, reward, next_state, _ = buffer.sample()
-    state, next_state = torch.tensor(state, device=device), \
-                        torch.tensor(next_state, device=device)
+    state, action, reward, next_state, done = buffer.sample()
+    state, next_state, done = torch.tensor(state, device=device), \
+                        torch.tensor(next_state, device=device),  torch.tensor(done, device=device)
 
     q = train_model(state).gather(1, torch.tensor(action, dtype=torch.int64, device=device).unsqueeze(-1))
 
     with torch.no_grad():
         max_arg = target_model(next_state).detach().max(1)[0]
-        q_target = torch.tensor(reward, dtype=torch.float, device=device) + discount_rate * max_arg
+        q_target = torch.tensor(reward, dtype=torch.float, device=device)
+        q_target[~done] += discount_rate * max_arg[~done]
 
     optimizer.zero_grad()
     loss = loss_func(q, q_target.unsqueeze(1))
@@ -94,7 +96,7 @@ target_model.load_state_dict(train_model.state_dict())
 optimizer = optim.Adam(train_model.parameters(), lr=lr)
 exp_buffer = ExperienceReplay(batch_size, buffer_size)
 
-while exp_buffer.get_length() < buffer_size:
+while exp_buffer.get_length() < batch_size:
     state = env.reset()
     done = False
     while not done:
@@ -107,10 +109,13 @@ update_counter = 0
 
 print(f'Run DQN with experience replay')
 
+episodes = []
+rewards = []
+
 for ep in range(num_ep):
     state = env.reset()
+    env.render()
     total_reward = 0.0
-    total_loss = 0.0
     done = False
 
     prob = max(min_prob, prob * decay_rate)
@@ -125,16 +130,25 @@ for ep in range(num_ep):
             action = np.argmax(output)
 
         next_state, reward, done, _ = env.step(action)
+        env.render()
         total_reward += reward
 
         exp_buffer.push(state, action, reward, next_state, done)
-
+        loss = train(train_model=train_model, target_model=target_model, discount_rate=discount_rate,
+                     optimizer=optimizer, buffer=exp_buffer)
         if update_counter == update_rate:
             update_counter = 0
             target_model.load_state_dict(train_model.state_dict())
-            loss = train(train_model=train_model, target_model=target_model, discount_rate=discount_rate,
-                         optimizer=optimizer, buffer=exp_buffer)
-            total_loss += loss
+
 
         state = next_state
+        episodes.append(ep)
+        rewards.append(total_reward)
+
     print(f'Episode {ep} - Total Reward:  {total_reward}')
+
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.scatter(episodes, rewards, label="Reward")
+ax.set_xlabel('Episode', fontsize=14)
+ax.set_ylabel('Reward each episode', fontsize=14)
+plt.show()
