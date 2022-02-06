@@ -1,4 +1,5 @@
 import random
+import os
 
 import numpy as np
 import gridworld as gw
@@ -6,68 +7,69 @@ import gridworld as gw
 import gridworld_vis as gv
 import matplotlib.pyplot as plt
 import seaborn as sb
+from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
 
-def sarsa(world, ep_num, prob, step_size=1, max_step=80):
+def sarsa(world, ep_num=1000, prob=1, decay_rate=0.99, step_size=1, max_step=100):
 
     # Initiate lookup table Q
     # Conventional: First dim: current_state_x, Second dim: current_state_y
     # Third dim: 0 - left, 1 - right, 2 - up, 3 - down
     Q = np.zeros((16, 16, 4))
-    moves = []
+    best_move = []
     returns = []
 
     for i in range(ep_num):
+        prob *= decay_rate
         print('-----------------------------')
         print(f"EXECUTING EPISODE {i}")
-        done = False
         world.reset()
-        S = world.current_state
-        current_step = 0
         moves = []
         ret = 0
 
         # Step 1
-        action = choose_action(world, Q, prob)
-        while not done and current_step < max_step:
+        A = choose_action(world, Q, prob)
+        for step in range(max_step):
+            S = world.current_state
             # Step 2
-            new_state, reward, done = world.step(action[0])
+            new_S, reward, done = world.step(A[0])
             # Step 3
-            print(f'Current step: {current_step}, Current Cell: {S}, Next Dir: {action[0]}, Q: {Q[S.x, S.y, action[1]]}')
-            print('.')
-            new_action = choose_action(world, Q, prob)
+            new_A = choose_action(world, Q, prob)
             # Step 4: Update Q
-            Q[S.x, S.y, action[1]] += step_size * (reward + Q[new_state.x, new_state.y, new_action[1]] - Q[S.x, S.y, action[1]])
-            # Retriving observed data and print info
-            moves.append((new_state.x-S.x,new_state.y-S.y))
-            ret += reward
-            current_step += 1
+            Q[S.x, S.y, A[1]] += step_size * (reward + Q[new_S.x, new_S.y, new_A[1]] - Q[S.x, S.y, A[1]])
             # Step 5
-            action = new_action
-            S = new_state
-        
+            A = new_A
+            # Retriving observed data and print info
+            print(f'Current step: {step}, Current Cell: {S}, Next Dir: {A[0]}, Q: {Q[S.x, S.y, A[1]]}')
+            print('.')
+            moves.append((new_S.x-S.x,new_S.y-S.y))
+            ret += reward
+            if done: break
+        S = world.current_state
         if isinstance(S, gw.GoalCell) and not isinstance(S, gw.PitCell):
-            returns.append((i,ret))
-    return moves, returns
+            best_move = moves
+            returns.append(ret)
+    return best_move, returns
 
 
-def q_learn(world, ep_num, prob, step_size=1, max_step=100):
+def q_learn(world, ep_num=2000, prob=1, decay_rate=0.99, step_size=1, max_step=100):
     Q = np.zeros((16, 16, 4))
-    returns = []
+    best_move = []
     moves = []
+    returns = []
 
     for i in range(ep_num):
+        prob *= decay_rate
         print('-----------------------------')
         print(f"EXECUTING EPISODE {i}")
-        done = False
         world.reset()
-        S = world.current_state
-        current_step=0
         moves = []
         ret = 0
 
-        while not done and current_step < max_step:
+        new_state = None
+        for step in range(max_step):
             # Step 1
+            S = world.current_state
             A = choose_action(world, Q, prob)
             # Step 2
             new_state, reward, done = world.step(A[0])
@@ -75,17 +77,16 @@ def q_learn(world, ep_num, prob, step_size=1, max_step=100):
             lookup_values = Q[new_state.x, new_state.y, :]
             Q[S.x, S.y, A[1]] += step_size * (reward + max(lookup_values) - Q[S.x, S.y, A[1]])
             # Retriving observed data and print info
-            print(f'Current step: {current_step}, Current Cell: {S}, Next Dir: {A[0]}, Q: {Q[S.x, S.y, A[1]]}')
+            print(f'Current step: {step}, Current Cell: {S}, Next Dir: {A[0]}, Q: {Q[S.x, S.y, A[1]]}')
             print('.')
             ret += reward
             moves.append((new_state.x-S.x,new_state.y-S.y))
-            current_step += 1
-            # Step 4
-            S = new_state
-        
+            if done: break
+        S = world.current_state
         if isinstance(S, gw.GoalCell) and not isinstance(S, gw.PitCell):
-            returns.append((i,ret))
-    return moves, returns
+            best_move = moves
+            returns.append(ret)
+    return best_move, returns
 
 
 def choose_action(world, Q, prob):
@@ -93,7 +94,7 @@ def choose_action(world, Q, prob):
     if choice == "random_action":
         A = random.choice(['left', 'right', 'up', 'down'])
         action_num = action_text_to_num(A)
-        print(f'Random Choice, {A}')
+        # print(f'Random Choice, {A}')
     else:
         lookup_values = Q[world.current_state.x, world.current_state.y, :]
         action_num =  np.argmax(lookup_values)
@@ -203,8 +204,7 @@ def walk_with_policy(world, policy, max_step=60):
     return moves
 
 
-
-def visualize_gridworld(world,actions):
+def visualize_gridworld(world,actions,name="grid"):
     def tile2classes(x, y):
         cell = world.get_state(x,15 - y)
         if isinstance(cell, gw.PitCell):
@@ -221,27 +221,134 @@ def visualize_gridworld(world,actions):
             return "recharge"
         return "normal"  
     svg = gv.gridworld(n=16, tile2classes=tile2classes, actions=actions)
-    svg.saveas("grid.svg", pretty=True)
+    svg.saveas(os.path.join(PATH, f"{name}.svg"), pretty=True)
 
 
-def plot_ret_eps(returns):
-    plt.scatter(*zip(*returns))
+def plot_ret_eps(returns,name="plot"):
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.scatter(range(len(returns)), returns)
     plt.xlabel('episode')
     plt.ylabel('return')
-    plt.title('Return on Episode')
-    plt.show()
+    plt.title(f'Return on Episode: {name}')
+    fig.tight_layout()
+    plt.savefig(os.path.join(PATH, f'{name}.pdf'))
+    plt.close(fig)
 
 
 if __name__ == '__main__':
+    setup_matplotlib()
+
     world = gw.World.load_from_file('world.json')
-    # world.reward_class = gw.ThirdReward
 
-    # actions, returns = sarsa(world,10000, 0.1, step_size=0.5, max_step=60)
-    # actions, returns = q_learn(world,10000, 0.01, step_size=1, max_step=60)
-    # visualize_gridworld(world,actions)
-    # plot_ret_eps(returns)
 
+    # b
+    actions, returns = sarsa(world,ep_num=2000)
+    visualize_gridworld(world,actions,"sarsa_path")
+    plot_ret_eps(returns,"sarsa_eps_return")
+
+
+    # c
+    k1 = []
+    k2 = []
+    success_num = []
+    avg_rets = []
+    for i in np.linspace(0,1,10):
+        _, returns = sarsa(world,ep_num=1000,prob=i,decay_rate=1)
+        k1.append(i)
+        success_num.append(len(returns))
+        if len(returns) > 0:
+            k2.append(i)
+            avg_rets.append(sum(returns) / max(1,len(returns)))
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(k1, success_num)
+    plt.xlabel('Probability')
+    plt.title('Success eps over 1000 runs (Sarsa)')
+    plt.savefig(os.path.join(PATH, 'sarsa_succ_eps.pdf'))
+    plt.close(fig)
+
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(k2, avg_rets)
+    plt.xlabel('Probability')
+    plt.title('Average success reward (Sarsa)')
+    plt.savefig(os.path.join(PATH, 'sarsa_avg_r.pdf'))
+    plt.close(fig)
+    
+
+    # d
+    actions, returns = q_learn(world,ep_num=1000)
+    visualize_gridworld(world,actions,"q_learning_path")
+    plot_ret_eps(returns,"q_learning_eps_return")
+
+    k1 = []
+    k2 = []
+    success_num = []
+    avg_rets = []
+    for i in np.linspace(0,1,10):
+        _, returns = q_learn(world,ep_num=1000,prob=i,decay_rate=1)
+        k1.append(i)
+        success_num.append(len(returns))
+        if len(returns) > 0:
+            k2.append(i)
+            avg_rets.append(sum(returns) / max(1,len(returns)))
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(k1, success_num)
+    plt.xlabel('Probability')
+    plt.title('Success eps over 1000 runs (Q Learning)')
+    plt.savefig(os.path.join(PATH, 'q_learning_succ_eps.pdf'))
+    plt.close(fig)
+
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    plt.plot(k2, avg_rets)
+    plt.xlabel('Probability')
+    plt.title('Average success reward (Q Learning)')
+    plt.savefig(os.path.join(PATH, 'q_learning_avg_r.pdf'))
+    plt.close(fig)
+
+
+    # e
+    world.reward_class = gw.SecondReward
+    actions, returns = q_learn(world,ep_num=1000)
+    visualize_gridworld(world,actions,"reward_2_q_learning_path")
+    plot_ret_eps(returns,"r_2_q_learning_eps_return")
+
+    world.reward_class = gw.ThirdReward
+    actions, returns = q_learn(world,ep_num=1000)
+    visualize_gridworld(world,actions,"reward_3_q_learning_path")
+    plot_ret_eps(returns,"reward_3_q_learning_eps_return")
+
+
+    # f
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
     policy,V = value_iteration(world)
     sb.heatmap(V,annot=True)
-    plt.show()
-    visualize_gridworld(world,walk_with_policy(world, policy))
+    plt.title('Optimal value function (first reward)')
+    plt.savefig(os.path.join(PATH, 'value_iter_reward_1.pdf'))
+    plt.close(fig)
+    visualize_gridworld(world,walk_with_policy(world, policy),"value_iter_reward_1")
+
+    world.reward_class = gw.SecondReward
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    policy,V = value_iteration(world)
+    sb.heatmap(V,annot=True)
+    plt.title('Optimal value function (second reward)')
+    plt.savefig(os.path.join(PATH, 'value_iter_reward_2.pdf'))
+    plt.close(fig)
+    visualize_gridworld(world,walk_with_policy(world, policy),"value_iter_reward_2")
+
+    world.reward_class = gw.SecondReward
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    policy,V = value_iteration(world,discount=0.9)
+    sb.heatmap(V,annot=True)
+    plt.title('Optimal value function (second reward, discount rate=0.9)')
+    plt.savefig(os.path.join(PATH, 'value_iter_reward_2_discount_09.pdf'))
+    plt.close(fig)
+    visualize_gridworld(world,walk_with_policy(world, policy),"value_iter_reward_2")
+
+    world.reward_class = gw.ThirdReward
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
+    policy,V = value_iteration(world)
+    sb.heatmap(V,annot=True)
+    plt.title('Optimal value function (third reward)')
+    plt.savefig(os.path.join(PATH, 'value_iter_reward_3.pdf'))
+    plt.close(fig)
+    visualize_gridworld(world,walk_with_policy(world, policy),"value_iter_reward_3")

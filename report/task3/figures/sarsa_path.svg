@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" baseProfile="full" height="16.05cm" version="1.1" width="16.05cm">
+  <defs>
+    <style type="text/css"><![CDATA[
+    .background { fill: white; }
+    .line { stroke: firebrick; stroke-width: .1mm; }
+    .lava { fill: #ff8b8b; }
+    .dry { fill: #f4a460; }
+    .water { fill: #afafff; }
+    .recharge {fill: #ffff00; }
+    .normal {fill: white; }
+    rect {
+       stroke: black;
+       stroke-width: 1;
+    }
+
+            .agent {
+                r: 3%;
+                fill: black;
+                stroke-width: 2;
+                stroke: grey;
+                animation: move 13.5s ease forwards;
+            }
+        
+@keyframes move {
+2.2222222222222223% {
+    transform: translate(0cm, -1cm);
+}
+4.444444444444445% {
+    transform: translate(0cm, -2cm);
+}
+6.666666666666667% {
+    transform: translate(0cm, -3cm);
+}
+8.88888888888889% {
+    transform: translate(1cm, -3cm);
+}
+11.11111111111111% {
+    transform: translate(2cm, -3cm);
+}
+13.333333333333334% {
+    transform: translate(3cm, -3cm);
+}
+15.555555555555555% {
+    transform: translate(4cm, -3cm);
+}
+17.77777777777778% {
+    transform: translate(4cm, -4cm);
+}
+20.0% {
+    transform: translate(4cm, -5cm);
+}
+22.22222222222222% {
+    transform: translate(4cm, -6cm);
+}
+24.444444444444443% {
+    transform: translate(5cm, -6cm);
+}
+26.666666666666668% {
+    transform: translate(6cm, -6cm);
+}
+28.888888888888886% {
+    transform: translate(7cm, -6cm);
+}
+31.11111111111111% {
+    transform: translate(7cm, -6cm);
+}
+33.33333333333333% {
+    transform: translate(7cm, -6cm);
+}
+35.55555555555556% {
+    transform: translate(7cm, -6cm);
+}
+37.77777777777778% {
+    transform: translate(7cm, -6cm);
+}
+40.0% {
+    transform: translate(7cm, -6cm);
+}
+42.22222222222222% {
+    transform: translate(7cm, -7cm);
+}
+44.44444444444444% {
+    transform: translate(8cm, -7cm);
+}
+46.666666666666664% {
+    transform: translate(9cm, -7cm);
+}
+48.888888888888886% {
+    transform: translate(9cm, -7cm);
+}
+51.11111111111111% {
+    transform: translate(10cm, -7cm);
+}
+53.333333333333336% {
+    transform: translate(10cm, -7cm);
+}
+55.55555555555556% {
+    transform: translate(11cm, -7cm);
+}
+57.77777777777777% {
+    transform: translate(11cm, -7cm);
+}
+60.0% {
+    transform: translate(11cm, -6cm);
+}
+62.22222222222222% {
+    transform: translate(11cm, -5cm);
+}
+64.44444444444444% {
+    transform: translate(12cm, -5cm);
+}
+66.66666666666666% {
+    transform: translate(12cm, -5cm);
+}
+68.88888888888889% {
+    transform: translate(12cm, -5cm);
+}
+71.11111111111111% {
+    transform: translate(12cm, -4cm);
+}
+73.33333333333333% {
+    transform: translate(12cm, -4cm);
+}
+75.55555555555556% {
+    transform: translate(12cm, -3cm);
+}
+77.77777777777779% {
+    transform: translate(13cm, -3cm);
+}
+80.0% {
+    transform: translate(13cm, -2cm);
+}
+82.22222222222221% {
+    transform: translate(13cm, -1cm);
+}
+84.44444444444444% {
+    transform: translate(13cm, 0cm);
+}
+86.66666666666667% {
+    transform: translate(13cm, 1cm);
+}
+88.88888888888889% {
+    transform: translate(13cm, 2cm);
+}
+91.11111111111111% {
+    transform: translate(12cm, 2cm);
+}
+93.33333333333333% {
+    transform: translate(11cm, 2cm);
+}
+95.55555555555556% {
+    transform: translate(11cm, 1cm);
+}
+97.77777777777777% {
+    transform: translate(11cm, 0cm);
+}
+100.0% {
+    transform: translate(11cm, -1cm);
+}
+}]]></style>
+  </defs>
+  <rect class="background" height="100%" width="100%" x="0" y="0"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="0.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="1.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="2.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="3.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="4.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="5.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="6.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="7.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="8.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="9.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="10.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="11.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="12.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="13.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="0.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="1.1cm" y="0.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="1.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="5.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="6.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="7.1cm"/>
+  <rect class="recharge" height="0.9cm" width="0.9cm" x="1.1cm" y="8.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="9.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="1.1cm" y="10.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="1.1cm" y="11.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="1.1cm" y="12.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="1.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="1.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="1.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="2.1cm" y="0.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="1.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="2.1cm" y="6.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="7.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="8.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="9.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="2.1cm" y="10.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="2.1cm" y="11.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="2.1cm" y="12.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="2.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="2.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="2.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="3.1cm" y="0.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="3.1cm" y="1.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="3.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="3.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="3.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="3.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="3.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="3.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="3.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="3.1cm" y="9.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="3.1cm" y="10.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="3.1cm" y="11.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="3.1cm" y="12.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="3.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="3.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="3.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="4.1cm" y="0.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="1.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="4.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="4.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="4.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="4.1cm" y="9.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="10.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="11.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="4.1cm" y="12.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="4.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="4.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="4.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="5.1cm" y="0.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="5.1cm" y="1.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="5.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="5.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="5.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="5.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="5.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="5.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="5.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="5.1cm" y="9.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="5.1cm" y="10.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="5.1cm" y="11.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="5.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="5.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="5.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="5.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="6.1cm" y="0.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="6.1cm" y="1.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="6.1cm" y="2.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="6.1cm" y="3.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="6.1cm" y="4.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="6.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="6.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="6.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="6.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="6.1cm" y="9.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="6.1cm" y="10.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="6.1cm" y="11.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="6.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="6.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="6.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="6.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="7.1cm" y="0.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="7.1cm" y="1.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="7.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="7.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="7.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="7.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="7.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="7.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="7.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="7.1cm" y="9.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="7.1cm" y="10.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="7.1cm" y="11.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="7.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="7.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="7.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="7.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="8.1cm" y="0.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="1.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="8.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="8.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="8.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="8.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="9.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="10.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="11.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="8.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="8.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="8.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="8.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="9.1cm" y="0.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="1.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="9.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="9.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="9.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="9.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="9.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="10.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="11.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="9.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="9.1cm" y="13.1cm"/>
+  <rect class="lava" height="0.9cm" width="0.9cm" x="9.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="9.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="10.1cm" y="0.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="1.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="10.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="10.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="10.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="10.1cm" y="6.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="7.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="8.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="9.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="10.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="11.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="12.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="13.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="10.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="10.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="0.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="11.1cm" y="1.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="2.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="3.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="4.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="11.1cm" y="6.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="7.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="8.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="9.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="10.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="11.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="12.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="13.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="11.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="11.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="12.1cm" y="0.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="12.1cm" y="1.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="12.1cm" y="2.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="12.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="12.1cm" y="6.1cm"/>
+  <rect class="recharge" height="0.9cm" width="0.9cm" x="12.1cm" y="7.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="8.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="9.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="10.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="11.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="13.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="12.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="12.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="13.1cm" y="0.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="13.1cm" y="1.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="13.1cm" y="2.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="13.1cm" y="3.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="13.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="13.1cm" y="5.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="13.1cm" y="6.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="13.1cm" y="7.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="13.1cm" y="8.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="13.1cm" y="9.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="13.1cm" y="10.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="13.1cm" y="11.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="13.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="13.1cm" y="13.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="13.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="13.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="14.1cm" y="0.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="14.1cm" y="1.1cm"/>
+  <rect class="water" height="0.9cm" width="0.9cm" x="14.1cm" y="2.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="3.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="4.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="5.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="6.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="7.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="8.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="9.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="10.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="11.1cm"/>
+  <rect class="dry" height="0.9cm" width="0.9cm" x="14.1cm" y="12.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="13.1cm"/>
+  <rect class="normal" height="0.9cm" width="0.9cm" x="14.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="14.1cm" y="15.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="0.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="1.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="2.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="3.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="4.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="5.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="6.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="7.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="8.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="9.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="10.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="11.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="12.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="13.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="14.1cm"/>
+  <rect class="line" height="0.9cm" width="0.9cm" x="15.1cm" y="15.1cm"/>
+  <circle class="agent" cx="1.55cm" cy="8.55cm" r="0.3cm"/>
+</svg>

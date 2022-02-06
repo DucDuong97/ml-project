@@ -1,9 +1,14 @@
 import math
 import random
+import os
+
+import numpy as np
+
 import gym
 from pyglet.window import key
-import numpy as np
+
 import matplotlib.pyplot as plt
+from make_figures import PATH, FIG_WITDH, FIG_HEIGHT, FIG_HEIGHT_FLAT, setup_matplotlib
 
 
 def interactive_cartpole():
@@ -52,26 +57,12 @@ def interactive_cartpole():
 
     env.close()
 
+##########################################################
 
 num_bucket_x = 3
 x_lower_bound = -2.4
 x_upper_bound = 2.4
 size_bucket_x = (x_upper_bound - x_lower_bound) / num_bucket_x
-
-num_bucket_x_vec = 48 * 2
-size_bucket_x_vec = 0.1
-x_vec_lower_bound = -4.8
-x_vec_upper_bound = 4.8
-
-num_bucket_theta = 24
-size_bucket_theta = 1
-theta_lower_bound = -12
-theta_upper_bound = 12
-
-num_bucket_theta_vec = 24
-size_bucket_theta_vec = 1
-theta_vec_lower_bound = -12
-theta_vec_upper_bound = 12
 
 num_bucket_x_vec = 3
 x_vec_lower_bound = -2.4 * 10
@@ -100,10 +91,6 @@ def discret_x_vec(value):
 
 
 def discret_theta(value):
-    # print()
-    # print(f'value: {value}')
-    # print(f'lowerbound: {theta_lower_bound}')
-    # print(f'size: {size_bucket_theta}')
     # print(math.floor((value - theta_lower_bound) / size_bucket_theta))
     return math.floor((value - theta_lower_bound) / size_bucket_theta)
 
@@ -113,10 +100,9 @@ def discret_theta_vec(value):
     return math.floor((value - theta_vec_lower_bound) / size_bucket_theta_vec)
 
 
-def q_learn_cartpole(env, eps_num=200, lr=0.9, max_step=500):
+def q_learn_discretize_cartpole(env, eps_num=200, lr=0.9, max_step=500):
     Q = np.zeros((num_bucket_theta, num_bucket_theta_vec, 2))
     highest_score = 0
-    best_moves = []
     eps_scores = []
 
     for ep in range(eps_num):
@@ -136,13 +122,11 @@ def q_learn_cartpole(env, eps_num=200, lr=0.9, max_step=500):
         env.reset()
 
         env.render()
-        moves = []
         for step in range(max_step):
             # Step 1
             S = env.state
             A = choose_action(S, Q, er)
             # Step 2
-
             new_state, reward, done, _ = env.step(A)
             env.render()
             # Termination work
@@ -150,30 +134,27 @@ def q_learn_cartpole(env, eps_num=200, lr=0.9, max_step=500):
                 eps_scores.append(step)
                 if step > highest_score:
                     highest_score = step
-                    best_moves = moves
                 break
             # Step 3: Update Q
-
             lookup_values = Q[discret_theta(new_state[2]), discret_theta_vec(new_state[3]), :]
-            Q[discret_theta(S[2]), discret_theta_vec(S[3]), A] += lr * (reward +
-                                                                        max(lookup_values) - Q[
-                                                                            discret_theta(S[2]), discret_theta_vec(
-                                                                                S[3]), A])
-            # Retriving observed data and print info
-            moves.append(A)
-
+            s_dis_theta = discret_theta(S[2])
+            s_dis_theta_vec = discret_theta_vec(S[3])
+            Q[s_dis_theta,s_dis_theta_vec,A] += lr * (reward + max(lookup_values) 
+                                                - Q[s_dis_theta, s_dis_theta_vec, A])
     print(f'High score: {highest_score}')
-    print(f'Best moves: {best_moves}')
-    plot_ret_eps(eps_scores)
+    plot_ret_eps(eps_scores,"discretize_theta")
     return Q
 
 
-def plot_ret_eps(returns):
+def plot_ret_eps(returns,name="plot"):
+    fig = plt.figure(figsize=(FIG_WITDH, FIG_HEIGHT))
     plt.scatter(range(len(returns)), returns)
     plt.xlabel('episode')
     plt.ylabel('return')
-    plt.title('Return on Episode')
-    plt.show()
+    plt.title(f'Return on Episode: {name}')
+    fig.tight_layout()
+    plt.savefig(os.path.join(PATH, f'{name}.pdf'))
+    plt.close(fig)
 
 
 def choose_action(S, Q, prob):
@@ -186,5 +167,6 @@ def choose_action(S, Q, prob):
 
 
 if __name__ == '__main__':
+    setup_matplotlib()
     env = gym.make('CartPole-v1')
-    q_learn_cartpole(env)
+    q_learn_discretize_cartpole(env)
