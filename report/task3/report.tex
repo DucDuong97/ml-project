@@ -22,7 +22,7 @@ Reinforcement learning is a type of learning, which results actions based on cer
 
 One of the problem of reinforcement learning is Markov decision process. This problem requires evaluate the outcome and choosing actions base on different situation to maximize the reward signal. The learner is called agent, which also makes decisions throughout the learning process. In this case, making decisions (actions) is interacting with things outside the agent, which is called environment. Each time the agent performs an action, depend on the current state s and the environment, it will move to another state s' and yield a reward R, which we want to maximize the cumulative sum overtime. The reward is simply a rational number and is the result of reward function, which evaluate the actions and is the driving force of how the agent should behave. For example, we have a robot as an agent with the objective to escape a maze with the minimum amount of steps. Then the return function will yield a negative reward as we want the agent to take less steps as possible.
 
-Now from a certain time t, we have a sequence of reward for the next steps as R\textsubscript{t+1},  R\textsubscript{t+2} ... R\textsubscript{T}, where T is the final step. The sum of these numbers is called return. Also at the time t, the agent has a certain state s and we want to evaluate how good this current state, which is how much potential reward can we gain from this state in the future (return). This is done by using value functions. Value functions defined by the ways the agent behaves, which is called policy. Policy is a mapping from states to probabilities of each possible actions. The notation is $\pi$(a$\vert$s), which is the probability the agent takes the action a if the current state is a. Thus the state-value function for Markov decision process can be defined as:
+Now from a certain time t, we have a sequence of reward for the next steps as R\textsubscript{t+1},  R\textsubscript{t+2} ... R\textsubscript{T}, where T is the final step. The sum of these numbers is called return. Also at the time t, the agent has a certain state s and we want to evaluate how good this current state, which is how much potential reward can we gain from this state in the future (return). This is done by using value functions. Value functions defined by the ways the agent behaves, which results in a certain number depends on the current state and the taken action. Policy is a mapping from states to probabilities of each possible actions. The notation is $\pi$(a$\vert$s), which is the probability the agent takes the action a if the current state is a. Thus the state-value function for Markov decision process can be defined as:
 
 v\textsubscript{$\pi$}(s) = E\textsubscript{$\pi$}\big[ G\textsubscript{$t$}|S\textsubscript{t}=s \big] = E\textsubscript{$\pi$}\big[ $\sum_{k=0}^{\infty} \gamma^{k} R\textsubscript{t+k+1} | S\textsubscript{t}=s$ \big], for all s in S
 
@@ -37,7 +37,7 @@ For reinforcement learning, to maximize the return, we want to find the best pol
 
 Aside from the case where the agent-environment interaction breaks into multiple subsequences (episodes), there are also the cases, which goes on infinitely. For such problem, we do not maximize the defined return but the discounted return:
 
-G\textsubscript{t} = R\textsubscript{t+1} + $\gamma$R\textsubscript{t+2} + $\gamma^{2}$R\textsubscript{t+3} + ... with $0 \leq \gamma \leq 1$ is called discount rate. Discount rate decides the value of the future reward. As $\gamma$ less than 1, the further the reward the agent receives, the less relevant is the reward. As the discount rate gets closer to 1, the agent values the future reward more. We have a recursive formula for the discount return as G\textsubscript{t} = R\textsubscript{t+1} + $\gamma$G\textsubscript{t+1}. As the result, we need to maintain the consistency of the recursive formula for all policies and states. This leads to the Bellman equations as shown in the task sheet.
+G\textsubscript{t} = R\textsubscript{t+1} + $\gamma$R\textsubscript{t+2} + $\gamma^{2}$R\textsubscript{t+3} + ... with $0 \leq \gamma \leq 1$. Discount rate $\gamma$ decides the value of the future reward. As $\gamma$ less than 1, the further the reward the agent receives, the less relevant is the reward. As the discount rate gets closer to 1, the agent values the future reward more. We have a recursive formula for the discount return as G\textsubscript{t} = R\textsubscript{t+1} + $\gamma$G\textsubscript{t+1}. As the result, we need to maintain the consistency of the recursive formula for all policies and states. This leads to the Bellman equations as shown in the task sheet.
 
 \subsection{Implementation and visualisation}
 
@@ -138,15 +138,37 @@ We implement a neural network with 4 x 32 x 2 with the learning rate of 1e-3, Ad
 
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/dqn.png}
 
-We train the model with 1500 episodes. The result is inconsistent. After 200 episodes, the reward exceeds over 100 for the first time, but is very low for the most episodes. As later into training, the reward keep getting better but still very low most of the time.
+The implementation can be found in cartpole\_dqn.py. We train the model with 1500 episodes. The result is inconsistent. After 200 episodes, the reward exceeds over 100 for the first time, but is very low for the most episodes. As later into training, the reward keep getting better but still very low most of the time.
+
+At this point, parameters tuning is necessary. The result how ever give us no indication of which parameters should we change. Thus we decided to increase the size of the network by adding another hidden layer with 64 nodes (4 x 32 x 64 x 2). As we expect for a better result, we decrease the number of episodes to 750.
+
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/dqn2.png}
+
+The model get to reward 100 in a single episode faster (after about 150 episodes). After about 400 episodes, the training agent keep getting the reward over 100 and most of the time peak at 500, which is good. However, there is a huge different between its lowest and its highest (even at the time when reward still exceeds over 100 at its low), which still proved the point mentioned in the task sheet, which is training the agent in deep neural network with Q-Learning is still unstable.
+
+To make this point clearer, we training the agent again.
+
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/dqn3.png}
+
+Even after 400 episodes, at its lowest, the reward can get very close to 0 and under 100 many times. In other word, it can still fail at solving the problem anytime after many episodes. Not to mentioned, all of these results  do not meet the requirement mentioned in the task sheet (though keep changing numbers through trials and errors can do but does not fix the inconsistency), which is why further modification is needed.
 
 \subsection{Deep Q-Learning With Experience Replay}
 
-As the task sheet recommend, we add an experience replay buffer to improve the model. The buffer has the size of 10000, and each time we train the model, we sample 128 tuples. The hyper-parameters of the model is the same as the one in the last section.
+The implementation can be found in cartpole\_dqn\_eb.py. As the task sheet recommend, we add an experience replay buffer to improve the model. The buffer has the size of 10000, and each time we train the model, we sample 128 tuples. When the buffer is full and another tuple will be added, we add it and remove the oldest one from the buffer. The hyper-parameters of the model is the same as the one in the last section.
+
+We start with a network of 4 x 32 x 2
 
 \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/dqn_buffer.pdf}
 
 The result shown a significant improvement. We only use 200 episodes and the reward exceeds 100 consistently after less than 100 episodes. The peak reward also grow faster compare to the previous approach without a buffer.
+
+This defined network does solve the given problem in the task sheet. Furthermore, we still want to check for the consistency. For this, we use a bigger network (4 x 32 x 64 x 2) and 500 episodes (to see the actual returns in a long run).
+
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{figures/dqn_buffer2.png}
+
+After over 300 episodes, the rewards are peak at 500 most of the times with a few exceptions (which are still over 100). The discrepancy between lowest and highest also much smaller compare to the previous implementation. We can come to the conclusion that using experience buffer does solve the issue with consistency.
+
+This report used reference from Sutton and Barto and \href{https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html}{Reinforcement Learning (DQN) Tutorial from Pytorch documentation}
 
 
 % Print references
